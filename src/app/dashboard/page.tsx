@@ -62,7 +62,7 @@ export default function Dashboard() {
     if (!userRef || !userData) return;
     updateDocumentNonBlocking(userRef, {
       vipStatus: true,
-      balance: (userData.balance || 0) - 5000 // Assume 5k SOLAR for VIP
+      balance: (userData.balance || 0) - 5000 
     });
   };
 
@@ -79,7 +79,6 @@ export default function Dashboard() {
   return (
     <Shell>
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
             <h1 className="text-4xl font-headline font-bold tracking-tight">Command Center</h1>
@@ -101,13 +100,12 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString() || '0.00', sub: '≈ $0.00', icon: Coins, color: 'text-secondary', glow: 'shadow-secondary/5' },
-            { label: 'Mining Rate', value: `${userData?.miningRate || 0} SOLAR/H`, sub: 'Stable Connection', icon: Pickaxe, color: 'text-primary', glow: 'shadow-primary/5' },
-            { label: 'Active Stakes', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Rewards: +0.00', icon: ShieldCheck, color: 'text-green-500', glow: 'shadow-green-500/5' },
-            { label: 'Referrals', value: '12 Users', sub: 'Total Earned: 1.2k', icon: UserPlus, color: 'text-purple-500', glow: 'shadow-purple-500/5' },
+            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00', sub: `Rate: ${userData?.miningRate || 0}/H`, icon: Coins, color: 'text-secondary', glow: 'shadow-secondary/5' },
+            { label: 'Mining Progress', value: 'ACTIVE', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary', glow: 'shadow-primary/5' },
+            { label: 'Active Stakes', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Shield Secured', icon: ShieldCheck, color: 'text-green-500', glow: 'shadow-green-500/5' },
+            { label: 'Referral Link', value: userData?.referralCode || 'N/A', sub: '25% Kickback', icon: UserPlus, color: 'text-purple-500', glow: 'shadow-purple-500/5' },
           ].map((stat, i) => (
             <Card key={i} className={`glass-card group ${stat.glow}`}>
               <CardContent className="p-6">
@@ -119,7 +117,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium mb-1">{stat.label}</p>
-                  <h3 className="text-3xl font-bold font-headline truncate">{stat.value}</h3>
+                  <h3 className="text-2xl font-bold font-headline truncate">{stat.value}</h3>
                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3 text-green-500" />
                     {stat.sub}
@@ -131,7 +129,6 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Chart */}
           <Card className="lg:col-span-2 glass-card overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between border-b border-white/5">
               <div className="space-y-1">
@@ -139,9 +136,8 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Historical performance vs AI projection</p>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" className="text-xs rounded-full">1H</Button>
-                <Button variant="secondary" size="sm" className="text-xs rounded-full">24H</Button>
-                <Button variant="ghost" size="sm" className="text-xs rounded-full">7D</Button>
+                <Button variant="ghost" size="sm" className="text-xs rounded-full">24H</Button>
+                <Button variant="secondary" size="sm" className="text-xs rounded-full">7D</Button>
               </div>
             </CardHeader>
             <CardContent className="pt-6">
@@ -155,34 +151,16 @@ export default function Dashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fill: '#666', fontSize: 12}}
-                    />
-                    <YAxis 
-                      hide 
-                    />
-                    <Tooltip 
-                      contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px'}}
-                      itemStyle={{color: 'hsl(var(--foreground))'}}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={3}
-                      fillOpacity={1} 
-                      fill="url(#colorValue)" 
-                    />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} />
+                    <YAxis hide />
+                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px'}} itemStyle={{color: 'hsl(var(--foreground))'}} />
+                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
-          {/* Quick Signals */}
           <Card className="glass-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg font-headline font-bold">Live Signals</CardTitle>
@@ -209,14 +187,14 @@ export default function Dashboard() {
                 ))}
                 {!signals?.length && !isSignalsLoading && (
                   <div className="p-8 text-center text-muted-foreground text-sm">
-                    No active signals.
+                    No active signals found.
                   </div>
                 )}
               </div>
               <div className="p-4 bg-white/5">
                 <Button variant="ghost" className="w-full text-xs text-primary gap-2" asChild>
                   <Link href="/signals">
-                    View Full Terminal <ArrowRight className="w-3 h-3" />
+                    Open Full Terminal <ArrowRight className="w-3 h-3" />
                   </Link>
                 </Button>
               </div>

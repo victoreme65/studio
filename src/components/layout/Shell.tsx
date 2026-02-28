@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -41,10 +41,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { setTheme, theme } = useTheme();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { user } = useUser();
   const auth = useAuth();
   const db = useFirestore();
+
+  // Avoid hydration mismatch by waiting until mounted to show theme-specific UI
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -75,7 +81,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="rounded-xl"
           >
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {mounted ? (
+              theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
           </Button>
         </div>
 
@@ -157,7 +167,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="w-10 h-10"
             >
-              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {mounted ? (
+                theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />
+              ) : (
+                <div className="w-5 h-5" />
+              )}
             </Button>
             <Button variant="ghost" size="icon" className="w-10 h-10" onClick={() => setIsMobileMenuOpen(true)}>
               <Menu className="w-6 h-6" />

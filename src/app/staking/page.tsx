@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shell } from '@/components/layout/Shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,11 @@ const STAKING_TIERS = [
 export default function StakingPage() {
   const [selectedTier, setSelectedTier] = useState(0);
   const [amount, setAmount] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleStake = () => {
     const numAmount = parseFloat(amount);
@@ -37,6 +42,11 @@ export default function StakingPage() {
   };
 
   const potentialReward = parseFloat(amount) ? (parseFloat(amount) * (STAKING_TIERS[selectedTier].reward / 100)).toFixed(2) : '0.00';
+
+  // Calculate unlock date on the client to avoid hydration mismatch
+  const unlockDate = mounted 
+    ? new Date(Date.now() + STAKING_TIERS[selectedTier].days * 24 * 60 * 60 * 1000).toLocaleDateString()
+    : "--/--/----";
 
   return (
     <Shell>
@@ -110,10 +120,10 @@ export default function StakingPage() {
                   <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                       <Lock className="w-3 h-3" />
-                      UNLOCk DATE
+                      UNLOCK DATE
                     </div>
                     <p className="text-xl font-bold">
-                      {new Date(Date.now() + STAKING_TIERS[selectedTier].days * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                      {unlockDate}
                     </p>
                   </div>
                 </div>

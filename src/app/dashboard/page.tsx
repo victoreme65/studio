@@ -191,7 +191,7 @@ export default function Dashboard() {
                 <div className="space-y-1">
                   {neuralLogs.map((log, i) => (
                     <p key={i} className="text-[10px] font-mono text-primary/80 animate-in fade-in slide-in-from-left-2">
-                      > {log}
+                      {'>'} {log}
                     </p>
                   ))}
                 </div>

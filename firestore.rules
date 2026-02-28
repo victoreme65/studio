@@ -29,17 +29,13 @@ service cloud.firestore {
       return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.vipStatus == true;
     }
 
-    function isUnchanged(field) {
-      return request.resource.data[field] == resource.data[field];
-    }
-
     // --- COLLECTION RULES ---
 
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
-      allow create: if isOwner(userId);
-      allow update: if (isOwner(userId) || isAdmin()) && isUnchanged('id');
+      allow create: if isSignedIn();
+      allow update: if (isOwner(userId) || isAdmin());
       allow delete: if isAdmin();
 
       match /miningLogs/{miningLogId} {
@@ -59,9 +55,9 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // Publicly accessible AI trading signals (Fixed: allow read for anyone)
+    // Publicly accessible AI trading signals
     match /signals_public/{signalId} {
-      allow read: if true;
+      allow read: if true; // Truly public
       allow write: if isAdmin();
     }
 
@@ -70,9 +66,9 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Publicly accessible AI price predictions (Fixed: allow read for anyone)
+    // Publicly accessible AI price predictions
     match /predictions_public/{predictionId} {
-      allow read: if true;
+      allow read: if true; // Truly public
       allow write: if isAdmin();
     }
 

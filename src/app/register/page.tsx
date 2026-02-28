@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Zap, Mail, Lock, User, ArrowLeft, ShieldCheck, Chrome, Wallet, Loader2, CheckCircle2 } from 'lucide-react';
+import { Zap, Mail, Lock, User, ArrowLeft, ShieldCheck, Chrome, Wallet, Loader2, CheckCircle2, XCircle, CheckCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useAuth, useFirestore, initiateEmailSignUp } from '@/firebase';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth, useFirestore } from '@/firebase';
+import { doc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
@@ -22,15 +22,79 @@ export default function RegisterPage() {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
+  // Validation states
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false
+  });
+
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+
+  // Username Availability Check
+  useEffect(() => {
+    const checkUsername = async () => {
+      if (username.length < 3) {
+        setUsernameStatus(username.length > 0 ? 'invalid' : 'idle');
+        return;
+      }
+      
+      setUsernameStatus('checking');
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('username', '==', username));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+          setUsernameStatus('available');
+        } else {
+          setUsernameStatus('taken');
+        }
+      } catch (error) {
+        console.error("Error checking username:", error);
+        setUsernameStatus('idle');
+      }
+    };
+
+    const timeoutId = setTimeout(checkUsername, 500);
+    return () => clearTimeout(timeoutId);
+  }, [username, db]);
+
+  // Password Criteria Check
+  useEffect(() => {
+    setPasswordCriteria({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    });
+  }, [password]);
+
+  const isPasswordValid = Object.values(passwordCriteria).every(Boolean);
+  const isUsernameValid = usernameStatus === 'available';
 
   const handleRegister = async () => {
     if (!email || !password || !username) {
       toast({ title: "Missing Fields", description: "Please fill in all details.", variant: "destructive" });
       return;
     }
+
+    if (!isUsernameValid) {
+      toast({ title: "Username Error", description: "Please choose a valid and available username.", variant: "destructive" });
+      return;
+    }
+
+    if (!isPasswordValid) {
+      toast({ title: "Weak Password", description: "Password does not meet the security criteria.", variant: "destructive" });
+      return;
+    }
+
     setIsLoading(true);
     // Simulation of OTP process
     setTimeout(() => {
@@ -48,8 +112,6 @@ export default function RegisterPage() {
     setIsLoading(true);
     
     try {
-      // In a real app, you'd verify the OTP via a backend or use Email Link auth
-      // For this prototype, we'll proceed with creating the Firebase User
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
@@ -57,7 +119,7 @@ export default function RegisterPage() {
         id: user.uid,
         username,
         email,
-        balance: 1000, // Initial signup bonus
+        balance: 1000, 
         miningRate: 0.4,
         lastMiningTime: new Date().toISOString(),
         referralCode: `SOLAR-${Math.random().toString(36).substring(7).toUpperCase()}`,
@@ -83,7 +145,7 @@ export default function RegisterPage() {
       
       await setDoc(doc(db, 'users', user.uid), {
         id: user.uid,
-        username: user.displayName || 'SolarTrader',
+        username: user.displayName?.split(' ')[0] || 'SolarTrader',
         email: user.email,
         balance: 1000,
         miningRate: 0.4,
@@ -132,15 +194,31 @@ export default function RegisterPage() {
               {step === 'INITIAL' && (
                 <>
                   <div className="space-y-4">
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input 
-                        placeholder="Username" 
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary" 
-                      />
+                    {/* Username Field */}
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input 
+                          placeholder="Username" 
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                          className={`bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary ${
+                            usernameStatus === 'taken' ? 'border-destructive' : usernameStatus === 'available' ? 'border-green-500' : ''
+                          }`} 
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {usernameStatus === 'checking' && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                          {usernameStatus === 'available' && <CheckCircle className="w-4 h-4 text-green-500" />}
+                          {usernameStatus === 'taken' && <XCircle className="w-4 h-4 text-destructive" />}
+                        </div>
+                      </div>
+                      <div className="px-1 h-4">
+                        {usernameStatus === 'taken' && <p className="text-[10px] text-destructive">Username already taken</p>}
+                        {usernameStatus === 'invalid' && <p className="text-[10px] text-muted-foreground">Min 3 characters, alphanumeric</p>}
+                        {usernameStatus === 'available' && <p className="text-[10px] text-green-500">Username is available</p>}
+                      </div>
                     </div>
+
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <Input 
@@ -150,21 +228,45 @@ export default function RegisterPage() {
                         className="bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary" 
                       />
                     </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input 
-                        type="password" 
-                        placeholder="Create Password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary" 
-                      />
+
+                    {/* Password Field */}
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input 
+                          type="password" 
+                          placeholder="Create Password" 
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className={`bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary ${
+                            password.length > 0 && !isPasswordValid ? 'border-orange-500' : isPasswordValid ? 'border-green-500' : ''
+                          }`} 
+                        />
+                      </div>
+                      
+                      {/* Password Criteria Grid */}
+                      <div className="grid grid-cols-2 gap-1 px-1">
+                        {[
+                          { key: 'length', label: '8+ Characters' },
+                          { key: 'uppercase', label: 'Uppercase' },
+                          { key: 'lowercase', label: 'Lowercase' },
+                          { key: 'number', label: 'Number' },
+                          { key: 'special', label: 'Special' },
+                        ].map((c) => (
+                          <div key={c.key} className="flex items-center gap-1.5">
+                            <div className={`w-1.5 h-1.5 rounded-full ${passwordCriteria[c.key as keyof typeof passwordCriteria] ? 'bg-green-500' : 'bg-white/10'}`} />
+                            <span className={`text-[9px] ${passwordCriteria[c.key as keyof typeof passwordCriteria] ? 'text-green-500' : 'text-muted-foreground'}`}>
+                              {c.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
                   <Button 
                     onClick={handleRegister}
-                    disabled={isLoading}
+                    disabled={isLoading || !isPasswordValid || !isUsernameValid}
                     className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold"
                   >
                     {isLoading ? <Loader2 className="animate-spin mr-2" /> : 'Get Verification Code'}

@@ -58,15 +58,15 @@ export default function Dashboard() {
     const neuralMessages = [
       "Analyzing BTC hash rate vectors...",
       "Detected pattern breakout on ETH/USDT 4H",
-      "Sentiment shift detected on X/Twitter clusters",
-      "Optimizing trade execution parameters",
+      "Sentiment shift detected on X clusters",
+      "Optimizing trade parameters",
       "Neural link established with Node-9",
-      "Calculating liquidation clusters for SOL",
+      "Calculating liquidation clusters",
     ];
 
     const logInterval = setInterval(() => {
       const msg = neuralMessages[Math.floor(Math.random() * neuralMessages.length)];
-      setNeuralLogs(prev => [msg, ...prev].slice(0, 5));
+      setNeuralLogs(prev => [msg, ...prev].slice(0, 4));
     }, 4000);
 
     return () => {
@@ -84,7 +84,7 @@ export default function Dashboard() {
 
   const signalsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, 'signals_public'), orderBy('timestamp', 'desc'), limit(3));
+    return query(collection(db, 'signals_public'), orderBy('timestamp', 'desc'), limit(5));
   }, [db]);
 
   const { data: signals, isLoading: isSignalsLoading } = useCollection(signalsQuery);
@@ -103,8 +103,8 @@ export default function Dashboard() {
   if (isUserLoading || isUserDataLoading) {
     return (
       <Shell>
-        <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex items-center justify-center h-[50vh]">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
       </Shell>
     );
@@ -112,47 +112,48 @@ export default function Dashboard() {
 
   return (
     <Shell>
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-headline font-bold tracking-tight">Financial Command</h1>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Activity className="w-4 h-4 text-primary animate-pulse" />
-              <span>Network: <span className="text-white font-mono">BTC @ ${ticker.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-0.5">
+            <h1 className="text-2xl md:text-3xl font-headline font-bold">Network Core</h1>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Activity className="w-3.5 h-3.5 text-primary animate-pulse" />
+              <span>BTC @ <span className="text-white font-mono">${ticker.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="border-secondary/50 text-secondary bg-secondary/10 px-4 py-1.5 rounded-full font-bold">
-              {userData?.vipStatus ? 'VIP ELITE' : 'STANDARD TIER'}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Badge variant="outline" className="border-secondary/30 text-secondary bg-secondary/5 px-3 py-1 rounded-full text-[10px] font-bold">
+              {userData?.vipStatus ? 'VIP ELITE' : 'STANDARD'}
             </Badge>
             {!userData?.vipStatus && (
               <Button 
                 onClick={handleUpgradeTier}
-                className="bg-primary hover:bg-primary/90 text-white gap-2 rounded-full px-6 glow-primary"
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-white gap-1.5 rounded-full px-4 text-xs glow-primary ml-auto sm:ml-0"
               >
-                <Zap className="w-4 h-4" />
-                Upgrade Tier
+                <Zap className="w-3 h-3" />
+                Upgrade
               </Button>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {[
-            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00', sub: `+${userData?.miningRate || 0.4}/H`, icon: Coins, color: 'text-secondary' },
-            { label: 'Mining State', value: 'NOMINAL', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary' },
-            { label: 'Asset Vault', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Staked Funds', icon: ShieldCheck, color: 'text-green-500' },
-            { label: 'Referral Code', value: userData?.referralCode || 'N/A', sub: 'Share & Earn', icon: UserPlus, color: 'text-purple-500' },
+            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { maximumFractionDigits: 2 }) || '0.00', sub: `+${userData?.miningRate || 0.4}/H`, icon: Coins, color: 'text-secondary' },
+            { label: 'Mining State', value: 'ACTIVE', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary' },
+            { label: 'Vault Staked', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Secured Funds', icon: ShieldCheck, color: 'text-green-500' },
+            { label: 'Referral ID', value: userData?.referralCode || 'N/A', sub: 'Earn 25%', icon: UserPlus, color: 'text-purple-500' },
           ].map((stat, i) => (
-            <Card key={i} className="glass-card group overflow-hidden">
-              <CardContent className="p-6">
-                <div className={`p-3 rounded-xl bg-white/5 ${stat.color} w-fit mb-4 group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="w-6 h-6" />
+            <Card key={i} className="glass-card">
+              <CardContent className="p-4">
+                <div className={`p-2 rounded-lg bg-white/5 ${stat.color} w-fit mb-2 md:mb-3`}>
+                  <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <p className="text-xs text-muted-foreground font-medium mb-1 uppercase tracking-widest">{stat.label}</p>
-                <h3 className="text-2xl font-bold font-headline truncate">{stat.value}</h3>
-                <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-green-500" />
+                <p className="text-[9px] md:text-[10px] text-muted-foreground font-medium mb-0.5 uppercase tracking-wider">{stat.label}</p>
+                <h3 className="text-lg md:text-xl font-bold font-headline truncate">{stat.value}</h3>
+                <p className="text-[9px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                  <TrendingUp className="w-2.5 h-2.5 text-green-500" />
                   {stat.sub}
                 </p>
               </CardContent>
@@ -160,42 +161,42 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <Card className="lg:col-span-2 glass-card">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-white/5">
-              <CardTitle className="text-lg font-headline font-bold flex items-center gap-2">
-                <BrainCircuit className="w-5 h-5 text-primary" />
-                Value Trajectory
+            <CardHeader className="flex flex-row items-center justify-between py-4 border-b border-white/5">
+              <CardTitle className="text-sm md:text-base font-headline font-bold flex items-center gap-2">
+                <BrainCircuit className="w-4 h-4 text-primary" />
+                Market Trajectory
               </CardTitle>
-              <Badge variant="outline" className="text-[10px]">LIVE ANALYSIS</Badge>
+              <Badge variant="outline" className="text-[8px] md:text-[9px]">LIVE</Badge>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="h-[300px] w-full">
+            <CardContent className="pt-4 px-2 md:px-6">
+              <div className="h-[200px] md:h-[260px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={CHART_DATA}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 10}} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 9}} />
                     <YAxis hide />
-                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px'}} />
-                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
+                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '10px'}} />
+                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
               
-              <div className="mt-6 p-4 rounded-xl bg-black/40 border border-white/5 space-y-2">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Binary className="w-3 h-3" />
-                  AI Neural Stream
+              <div className="mt-4 p-3 rounded-lg bg-black/40 border border-white/5 space-y-1.5">
+                <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Binary className="w-2.5 h-2.5" />
+                  AI Stream
                 </p>
                 <div className="space-y-1">
                   {neuralLogs.map((log, i) => (
-                    <p key={i} className="text-[10px] font-mono text-primary/80 animate-in fade-in slide-in-from-left-2">
+                    <p key={i} className="text-[8px] md:text-[9px] font-mono text-primary/80 truncate">
                       {'>'} {log}
                     </p>
                   ))}
@@ -204,37 +205,37 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-white/5">
-              <CardTitle className="text-lg font-headline font-bold">Live AI Signals</CardTitle>
-              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <Card className="glass-card flex flex-col h-full max-h-[450px] lg:max-h-none">
+            <CardHeader className="flex flex-row items-center justify-between py-4 border-b border-white/5">
+              <CardTitle className="text-sm md:text-base font-headline font-bold">Signals</CardTitle>
+              <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-white/5 h-[400px] overflow-y-auto scrollbar-hide">
+            <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
+              <div className="flex-1 overflow-y-auto scrollbar-hide divide-y divide-white/5">
                 {signals?.map((signal, i) => (
-                  <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${signal.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
-                        {signal.type === 'BUY' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                  <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`p-1.5 rounded-md ${signal.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+                        {signal.type === 'BUY' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                       </div>
                       <div>
-                        <p className="text-sm font-bold">{signal.pair}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase">{signal.confidence}% Confidence</p>
+                        <p className="text-xs font-bold">{signal.pair}</p>
+                        <p className="text-[9px] text-muted-foreground uppercase">{signal.confidence}% Conf</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-bold ${signal.type === 'BUY' ? 'text-green-500' : 'text-destructive'}`}>{signal.type}</p>
-                      <p className="text-xs font-mono text-muted-foreground">${signal.entry?.toLocaleString()}</p>
+                      <p className={`text-xs font-bold ${signal.type === 'BUY' ? 'text-green-500' : 'text-destructive'}`}>{signal.type}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground">${signal.entry?.toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
                 {!signals?.length && !isSignalsLoading && (
-                  <div className="p-10 text-center text-muted-foreground text-sm">Waiting for AI sync...</div>
+                  <div className="p-8 text-center text-muted-foreground text-xs">Waiting for sync...</div>
                 )}
               </div>
-              <div className="p-4 bg-white/5">
-                <Button variant="ghost" className="w-full text-xs text-primary gap-2" asChild>
-                  <Link href="/signals">Signal Terminal <ArrowRight className="w-3 h-3" /></Link>
+              <div className="p-3 bg-white/5 border-t border-white/5">
+                <Button variant="ghost" className="w-full h-8 text-[10px] text-primary gap-1.5" asChild>
+                  <Link href="/signals">Signal Terminal <ArrowRight className="w-2.5 h-2.5" /></Link>
                 </Button>
               </div>
             </CardContent>

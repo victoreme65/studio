@@ -11,8 +11,8 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, updateDo
 import { doc, collection, query, orderBy } from 'firebase/firestore';
 
 const STAKING_TIERS = [
-  { days: 7, reward: 5, label: 'Standard', icon: Zap, rate: 0.05 },
-  { days: 14, reward: 12, label: 'Reinforced', icon: ShieldCheck, rate: 0.12 },
+  { days: 7, reward: 5, label: 'Std', icon: Zap, rate: 0.05 },
+  { days: 14, reward: 12, label: 'Ref', icon: ShieldCheck, rate: 0.12 },
   { days: 30, reward: 25, label: 'Quantum', icon: Lock, rate: 0.25 },
 ];
 
@@ -46,11 +46,7 @@ export default function StakingPage() {
     if (!user || !userRef || !userData || !db) return;
     
     if (isNaN(numAmount) || numAmount <= 0 || numAmount > (userData.balance || 0)) {
-      toast({
-        title: "Transaction Error",
-        description: "Verify your available SOLAR balance.",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "Insufficient balance.", variant: "destructive" });
       return;
     }
 
@@ -75,10 +71,7 @@ export default function StakingPage() {
       rewardEarned: numAmount * tier.rate
     });
 
-    toast({
-      title: "Vault Secured",
-      description: `Committed ${numAmount} SOLAR to the ${tier.label} vault.`,
-    });
+    toast({ title: "Secured", description: `Staked ${numAmount} SOLAR.` });
     setAmount('');
   };
 
@@ -91,58 +84,57 @@ export default function StakingPage() {
 
   return (
     <Shell>
-      <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-headline font-bold text-white tracking-tight">Yield Vaults</h1>
-          <p className="text-muted-foreground">Lock assets in decentralized security pools to generate network yields.</p>
+      <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
+        <div className="text-center space-y-1">
+          <h1 className="text-2xl md:text-3xl font-headline font-bold">Yield Vaults</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">Secure your assets for passive network yields.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground px-1 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" />
-              Available Pools
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-4">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Activity className="w-3 h-3 text-primary" />
+              Pool Selection
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2">
               {STAKING_TIERS.map((tier, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedTier(i)}
-                  className={`glass-card p-6 rounded-2xl text-left transition-all relative overflow-hidden group ${selectedTier === i ? 'ring-2 ring-primary bg-primary/10 shadow-[0_0_30px_rgba(0,102,255,0.15)]' : 'hover:bg-white/5'}`}
+                  className={`glass-card p-3 rounded-xl text-center transition-all ${selectedTier === i ? 'ring-1 ring-primary bg-primary/5' : 'hover:bg-white/5'}`}
                 >
-                  <div className={`p-2 rounded-lg w-fit mb-4 ${selectedTier === i ? 'bg-primary text-white' : 'bg-white/5 text-muted-foreground'}`}>
-                    <tier.icon className="w-5 h-5" />
+                  <div className={`p-1.5 rounded-lg w-fit mx-auto mb-2 ${selectedTier === i ? 'bg-primary text-white' : 'bg-white/5 text-muted-foreground'}`}>
+                    <tier.icon className="w-3.5 h-3.5" />
                   </div>
-                  <h3 className="text-lg font-bold font-headline mb-1">{tier.days} Days</h3>
-                  <p className="text-2xl font-bold text-secondary mb-1">+{tier.reward}%</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{tier.label} Access</p>
+                  <h3 className="text-xs font-bold font-headline">{tier.days}D</h3>
+                  <p className="text-sm font-bold text-secondary">+{tier.reward}%</p>
                 </button>
               ))}
             </div>
 
-            <Card className="glass-card mt-8">
-              <CardHeader className="border-b border-white/5">
-                <CardTitle className="text-lg font-headline font-bold flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-primary" />
-                  Vault Calculator
+            <Card className="glass-card">
+              <CardHeader className="py-4 border-b border-white/5">
+                <CardTitle className="text-sm md:text-base font-headline font-bold flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-primary" />
+                  Calculator
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6 pt-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
-                    <span className="text-muted-foreground">Balance in Wallet</span>
+              <CardContent className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground">
+                    <span>Available</span>
                     <span className="text-white">{userData?.balance?.toLocaleString() || '0.00'} SOLAR</span>
                   </div>
                   <div className="relative">
                     <Input 
-                      placeholder="Commit amount..." 
-                      className="bg-white/5 border-white/10 h-16 text-2xl font-bold pr-24 rounded-2xl focus:ring-primary"
+                      placeholder="Amount..." 
+                      className="bg-white/5 border-white/10 h-12 text-lg font-bold pr-16 rounded-xl"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                     />
                     <Button 
                       variant="ghost" 
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:bg-primary/10 font-bold"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-primary h-8"
                       onClick={() => setAmount(userData?.balance?.toString() || '0')}
                     >
                       MAX
@@ -150,21 +142,21 @@ export default function StakingPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/5">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">NETWORK YIELD</p>
-                    <p className="text-xl font-bold text-green-500">+{potentialReward} SOLAR</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                    <p className="text-[8px] text-muted-foreground uppercase mb-0.5">EST. YIELD</p>
+                    <p className="text-sm font-bold text-green-500">+{potentialReward}</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-white/5 border border-white/5">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">MATURITY DATE</p>
-                    <p className="text-xl font-bold text-white">{unlockDate}</p>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                    <p className="text-[8px] text-muted-foreground uppercase mb-0.5">UNLOCK</p>
+                    <p className="text-sm font-bold">{unlockDate}</p>
                   </div>
                 </div>
 
                 <Button 
                   onClick={handleStake}
                   disabled={!amount || parseFloat(amount) <= 0}
-                  className="w-full h-16 text-lg font-bold bg-primary hover:bg-primary/90 text-white rounded-2xl glow-primary"
+                  className="w-full h-12 font-bold bg-primary hover:bg-primary/90 rounded-xl"
                 >
                   Commit to Vault
                 </Button>
@@ -172,48 +164,30 @@ export default function StakingPage() {
             </Card>
           </div>
 
-          <div className="space-y-6">
-            <Card className="glass-card bg-primary/5 border-primary/20">
-              <CardHeader className="border-b border-white/5">
-                <CardTitle className="text-lg font-headline font-bold flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-secondary" />
-                  Active Stakes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
+          <Card className="glass-card h-full max-h-[400px] md:max-h-none overflow-hidden flex flex-col">
+            <CardHeader className="py-4 border-b border-white/5">
+              <CardTitle className="text-sm md:text-base font-headline font-bold flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-secondary" />
+                Active
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto scrollbar-hide p-0">
+              <div className="divide-y divide-white/5">
                 {stakes?.map((stake, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 group hover:bg-white/10 transition-colors">
+                  <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors">
                     <div>
-                      <p className="text-sm font-bold text-white">{stake.amount.toLocaleString()} SOLAR</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Ends: {new Date(stake.endTime).toLocaleDateString()}</p>
+                      <p className="text-xs font-bold">{stake.amount.toLocaleString()} SOLAR</p>
+                      <p className="text-[9px] text-muted-foreground uppercase">Ends: {new Date(stake.endTime).toLocaleDateString()}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-green-500">+{stake.rewardEarned.toFixed(2)}</p>
-                      <Badge variant="outline" className="text-[8px] h-4 border-primary/30 text-primary">SECURED</Badge>
-                    </div>
+                    <p className="text-xs font-bold text-green-500">+{stake.rewardEarned.toFixed(2)}</p>
                   </div>
                 ))}
                 {!stakes?.length && (
-                  <div className="text-center py-8 space-y-2">
-                    <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto">
-                      <Coins className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Your vault is currently empty.</p>
-                  </div>
+                  <div className="p-8 text-center text-muted-foreground text-[10px]">Empty vault.</div>
                 )}
-              </CardContent>
-            </Card>
-            
-            <div className="p-6 rounded-2xl glass-card bg-secondary/5 border-secondary/20">
-              <h4 className="text-sm font-bold text-secondary flex items-center gap-2 mb-2">
-                <Zap className="w-4 h-4 fill-current" />
-                Boost Rewards
-              </h4>
-              <p className="text-xs text-muted-foreground">
-                VIP Elite members receive an additional 5% yield boost on all Quantum tier stakes.
-              </p>
-            </div>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Shell>

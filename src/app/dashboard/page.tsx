@@ -6,14 +6,14 @@ import {
   Coins, 
   Zap, 
   Pickaxe, 
-  TrendingUp, 
   ArrowUpRight, 
   ArrowDownRight, 
   ShieldCheck,
   UserPlus,
   Activity,
   ArrowRight,
-  Loader2
+  Loader2,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,20 +29,29 @@ import {
 } from 'recharts';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc, collection, query, limit, orderBy } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
 
 const CHART_DATA = [
-  { name: 'Mon', value: 4000 },
-  { name: 'Tue', value: 4500 },
-  { name: 'Wed', value: 4200 },
-  { name: 'Thu', value: 4800 },
-  { name: 'Fri', value: 5200 },
-  { name: 'Sat', value: 5800 },
-  { name: 'Sun', value: 6400 },
+  { name: '00:00', value: 42000 },
+  { name: '04:00', value: 45000 },
+  { name: '08:00', value: 44000 },
+  { name: '12:00', value: 48000 },
+  { name: '16:00', value: 52000 },
+  { name: '20:00', value: 51000 },
+  { name: '24:00', value: 54000 },
 ];
 
 export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
+  const [ticker, setTicker] = useState(64520.45);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTicker(prev => prev + (Math.random() - 0.5) * 50);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   const userRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -62,7 +71,6 @@ export default function Dashboard() {
     if (!userRef || !userData) return;
     updateDocumentNonBlocking(userRef, {
       vipStatus: true,
-      balance: (userData.balance || 0) - 5000 
     });
   };
 
@@ -82,7 +90,10 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
             <h1 className="text-4xl font-headline font-bold tracking-tight">Command Center</h1>
-            <p className="text-muted-foreground">Quantum analytics and mining optimization live.</p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Activity className="w-4 h-4 text-primary animate-pulse" />
+              <span>BTC/USD: <span className="text-white font-mono">${ticker.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="border-secondary/50 text-secondary bg-secondary/10 px-4 py-1.5 rounded-full font-bold">
@@ -102,43 +113,32 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00', sub: `Rate: ${userData?.miningRate || 0}/H`, icon: Coins, color: 'text-secondary', glow: 'shadow-secondary/5' },
-            { label: 'Mining Progress', value: 'ACTIVE', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary', glow: 'shadow-primary/5' },
-            { label: 'Active Stakes', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Shield Secured', icon: ShieldCheck, color: 'text-green-500', glow: 'shadow-green-500/5' },
-            { label: 'Referral Link', value: userData?.referralCode || 'N/A', sub: '25% Kickback', icon: UserPlus, color: 'text-purple-500', glow: 'shadow-purple-500/5' },
+            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00', sub: `+${userData?.miningRate || 0}/H`, icon: Coins, color: 'text-secondary' },
+            { label: 'Mining Status', value: 'ACTIVE', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary' },
+            { label: 'Vault Balance', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Secured', icon: ShieldCheck, color: 'text-green-500' },
+            { label: 'Network Code', value: userData?.referralCode || 'N/A', sub: 'Earn 25%', icon: UserPlus, color: 'text-purple-500' },
           ].map((stat, i) => (
-            <Card key={i} className={`glass-card group ${stat.glow}`}>
+            <Card key={i} className="glass-card group overflow-hidden">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-white/5 ${stat.color} group-hover:scale-110 transition-transform`}>
-                    <stat.icon className="w-6 h-6" />
-                  </div>
-                  <Activity className="w-4 h-4 text-muted-foreground opacity-30" />
+                <div className={`p-3 rounded-xl bg-white/5 ${stat.color} w-fit mb-4 group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="w-6 h-6" />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium mb-1">{stat.label}</p>
-                  <h3 className="text-2xl font-bold font-headline truncate">{stat.value}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                    <ArrowUpRight className="w-3 h-3 text-green-500" />
-                    {stat.sub}
-                  </p>
-                </div>
+                <p className="text-xs text-muted-foreground font-medium mb-1 uppercase tracking-widest">{stat.label}</p>
+                <h3 className="text-2xl font-bold font-headline truncate">{stat.value}</h3>
+                <p className="text-[10px] text-muted-foreground mt-2 flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3 text-green-500" />
+                  {stat.sub}
+                </p>
               </CardContent>
             </Card>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 glass-card overflow-hidden">
+          <Card className="lg:col-span-2 glass-card">
             <CardHeader className="flex flex-row items-center justify-between border-b border-white/5">
-              <div className="space-y-1">
-                <CardTitle className="text-lg font-headline font-bold">Value Trajectory</CardTitle>
-                <p className="text-xs text-muted-foreground">Historical performance vs AI projection</p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" className="text-xs rounded-full">24H</Button>
-                <Button variant="secondary" size="sm" className="text-xs rounded-full">7D</Button>
-              </div>
+              <CardTitle className="text-lg font-headline font-bold">Value Trajectory</CardTitle>
+              <Badge variant="outline" className="text-[10px]">LIVE FEED</Badge>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="h-[300px] w-full">
@@ -151,9 +151,9 @@ export default function Dashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 10}} />
                     <YAxis hide />
-                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px'}} itemStyle={{color: 'hsl(var(--foreground))'}} />
+                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px'}} />
                     <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -162,40 +162,36 @@ export default function Dashboard() {
           </Card>
 
           <Card className="glass-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-headline font-bold">Live Signals</CardTitle>
-              <Badge className="bg-primary/20 text-primary border-none text-[10px] animate-pulse">LIVE</Badge>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-white/5">
+              <CardTitle className="text-lg font-headline font-bold">Live AI Signals</CardTitle>
+              <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-white/5">
                 {signals?.map((signal, i) => (
-                  <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group cursor-pointer">
+                  <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-lg ${signal.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
                         {signal.type === 'BUY' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
                       </div>
                       <div>
                         <p className="text-sm font-bold">{signal.pair}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{signal.confidence}% Accuracy</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">{signal.confidence}% Confidence</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className={`text-sm font-bold ${signal.type === 'BUY' ? 'text-green-500' : 'text-destructive'}`}>{signal.type}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground">@{signal.entry?.toFixed(2)}</p>
+                      <p className="text-xs font-mono text-muted-foreground">${signal.entry?.toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
                 {!signals?.length && !isSignalsLoading && (
-                  <div className="p-8 text-center text-muted-foreground text-sm">
-                    No active signals found.
-                  </div>
+                  <div className="p-10 text-center text-muted-foreground text-sm">Synchronizing network...</div>
                 )}
               </div>
               <div className="p-4 bg-white/5">
                 <Button variant="ghost" className="w-full text-xs text-primary gap-2" asChild>
-                  <Link href="/signals">
-                    Open Full Terminal <ArrowRight className="w-3 h-3" />
-                  </Link>
+                  <Link href="/signals">Full Terminal <ArrowRight className="w-3 h-3" /></Link>
                 </Button>
               </div>
             </CardContent>

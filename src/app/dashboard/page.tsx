@@ -112,24 +112,24 @@ export default function Dashboard() {
 
   return (
     <Shell>
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="space-y-0.5">
-            <h1 className="text-2xl md:text-3xl font-headline font-bold">Network Core</h1>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Activity className="w-3.5 h-3.5 text-primary animate-pulse" />
+            <h1 className="text-xl md:text-2xl font-headline font-bold">Network Core</h1>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Activity className="w-3 h-3 text-primary animate-pulse" />
               <span>BTC @ <span className="text-white font-mono">${ticker.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
             </div>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Badge variant="outline" className="border-secondary/30 text-secondary bg-secondary/5 px-3 py-1 rounded-full text-[10px] font-bold">
+            <Badge variant="outline" className="border-secondary/30 text-secondary bg-secondary/5 px-2 py-0.5 rounded-full text-[9px] font-bold">
               {userData?.vipStatus ? 'VIP ELITE' : 'STANDARD'}
             </Badge>
             {!userData?.vipStatus && (
               <Button 
                 onClick={handleUpgradeTier}
                 size="sm"
-                className="bg-primary hover:bg-primary/90 text-white gap-1.5 rounded-full px-4 text-xs glow-primary ml-auto sm:ml-0"
+                className="bg-primary hover:bg-primary/90 text-white gap-1 h-8 rounded-full px-3 text-[10px] glow-primary ml-auto sm:ml-0"
               >
                 <Zap className="w-3 h-3" />
                 Upgrade
@@ -138,7 +138,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
           {[
             { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { maximumFractionDigits: 2 }) || '0.00', sub: `+${userData?.miningRate || 0.4}/H`, icon: Coins, color: 'text-secondary' },
             { label: 'Mining State', value: 'ACTIVE', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary' },
@@ -146,14 +146,14 @@ export default function Dashboard() {
             { label: 'Referral ID', value: userData?.referralCode || 'N/A', sub: 'Earn 25%', icon: UserPlus, color: 'text-purple-500' },
           ].map((stat, i) => (
             <Card key={i} className="glass-card">
-              <CardContent className="p-4">
-                <div className={`p-2 rounded-lg bg-white/5 ${stat.color} w-fit mb-2 md:mb-3`}>
-                  <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
+              <CardContent className="p-3">
+                <div className={`p-1.5 rounded-lg bg-white/5 ${stat.color} w-fit mb-1.5`}>
+                  <stat.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </div>
-                <p className="text-[9px] md:text-[10px] text-muted-foreground font-medium mb-0.5 uppercase tracking-wider">{stat.label}</p>
-                <h3 className="text-lg md:text-xl font-bold font-headline truncate">{stat.value}</h3>
-                <p className="text-[9px] text-muted-foreground mt-1.5 flex items-center gap-1">
-                  <TrendingUp className="w-2.5 h-2.5 text-green-500" />
+                <p className="text-[8px] md:text-[9px] text-muted-foreground font-medium mb-0.5 uppercase tracking-wider">{stat.label}</p>
+                <h3 className="text-base md:text-lg font-bold font-headline truncate">{stat.value}</h3>
+                <p className="text-[8px] text-muted-foreground mt-1 flex items-center gap-1">
+                  <TrendingUp className="w-2 h-2 text-green-500" />
                   {stat.sub}
                 </p>
               </CardContent>
@@ -161,17 +161,17 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
           <Card className="lg:col-span-2 glass-card">
-            <CardHeader className="flex flex-row items-center justify-between py-4 border-b border-white/5">
-              <CardTitle className="text-sm md:text-base font-headline font-bold flex items-center gap-2">
-                <BrainCircuit className="w-4 h-4 text-primary" />
+            <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b border-white/5">
+              <CardTitle className="text-xs md:text-sm font-headline font-bold flex items-center gap-2">
+                <BrainCircuit className="w-3.5 h-3.5 text-primary" />
                 Market Trajectory
               </CardTitle>
-              <Badge variant="outline" className="text-[8px] md:text-[9px]">LIVE</Badge>
+              <Badge variant="outline" className="text-[8px]">LIVE</Badge>
             </CardHeader>
-            <CardContent className="pt-4 px-2 md:px-6">
-              <div className="h-[200px] md:h-[260px] w-full">
+            <CardContent className="pt-3 px-2 md:px-4">
+              <div className="h-[180px] md:h-[220px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={CHART_DATA}>
                     <defs>
@@ -181,22 +181,22 @@ export default function Dashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 9}} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 8}} />
                     <YAxis hide />
-                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '10px'}} />
-                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', fontSize: '9px'}} />
+                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={1.5} fillOpacity={1} fill="url(#colorValue)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
               
-              <div className="mt-4 p-3 rounded-lg bg-black/40 border border-white/5 space-y-1.5">
-                <p className="text-[8px] md:text-[9px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                  <Binary className="w-2.5 h-2.5" />
+              <div className="mt-3 p-2 rounded-lg bg-black/40 border border-white/5 space-y-1">
+                <p className="text-[7px] md:text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <Binary className="w-2 h-2" />
                   AI Stream
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {neuralLogs.map((log, i) => (
-                    <p key={i} className="text-[8px] md:text-[9px] font-mono text-primary/80 truncate">
+                    <p key={i} className="text-[8px] font-mono text-primary/80 truncate">
                       {'>'} {log}
                     </p>
                   ))}
@@ -205,37 +205,37 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card flex flex-col h-full max-h-[450px] lg:max-h-none">
-            <CardHeader className="flex flex-row items-center justify-between py-4 border-b border-white/5">
-              <CardTitle className="text-sm md:text-base font-headline font-bold">Signals</CardTitle>
-              <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          <Card className="glass-card flex flex-col h-full max-h-[350px] lg:max-h-none">
+            <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b border-white/5">
+              <CardTitle className="text-xs md:text-sm font-headline font-bold">Signals</CardTitle>
+              <span className="flex h-1 w-1 rounded-full bg-green-500 animate-pulse" />
             </CardHeader>
             <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
               <div className="flex-1 overflow-y-auto scrollbar-hide divide-y divide-white/5">
                 {signals?.map((signal, i) => (
-                  <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors">
-                    <div className="flex items-center gap-2.5">
-                      <div className={`p-1.5 rounded-md ${signal.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
-                        {signal.type === 'BUY' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                  <div key={i} className="px-3 py-2 flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1 rounded-md ${signal.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+                        {signal.type === 'BUY' ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
                       </div>
                       <div>
-                        <p className="text-xs font-bold">{signal.pair}</p>
-                        <p className="text-[9px] text-muted-foreground uppercase">{signal.confidence}% Conf</p>
+                        <p className="text-[10px] font-bold">{signal.pair}</p>
+                        <p className="text-[8px] text-muted-foreground uppercase">{signal.confidence}% Conf</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`text-xs font-bold ${signal.type === 'BUY' ? 'text-green-500' : 'text-destructive'}`}>{signal.type}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground">${signal.entry?.toLocaleString()}</p>
+                      <p className={`text-[10px] font-bold ${signal.type === 'BUY' ? 'text-green-500' : 'text-destructive'}`}>{signal.type}</p>
+                      <p className="text-[9px] font-mono text-muted-foreground">${signal.entry?.toLocaleString()}</p>
                     </div>
                   </div>
                 ))}
                 {!signals?.length && !isSignalsLoading && (
-                  <div className="p-8 text-center text-muted-foreground text-xs">Waiting for sync...</div>
+                  <div className="p-4 text-center text-muted-foreground text-[10px]">Waiting for sync...</div>
                 )}
               </div>
-              <div className="p-3 bg-white/5 border-t border-white/5">
-                <Button variant="ghost" className="w-full h-8 text-[10px] text-primary gap-1.5" asChild>
-                  <Link href="/signals">Signal Terminal <ArrowRight className="w-2.5 h-2.5" /></Link>
+              <div className="p-2 bg-white/5 border-t border-white/5">
+                <Button variant="ghost" className="w-full h-7 text-[9px] text-primary gap-1" asChild>
+                  <Link href="/signals">Terminal <ArrowRight className="w-2 h-2" /></Link>
                 </Button>
               </div>
             </CardContent>

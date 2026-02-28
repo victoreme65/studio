@@ -97,57 +97,57 @@ export default function MiningPage() {
 
   return (
     <Shell>
-      <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
+      <div className="max-w-4xl mx-auto space-y-4 animate-in fade-in duration-500">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
           <div className="space-y-0.5">
-            <h1 className="text-2xl md:text-3xl font-headline font-bold">Extraction Hub</h1>
-            <p className="text-xs text-muted-foreground">Distributed compute nodes for SOLAR generation.</p>
+            <h1 className="text-xl md:text-2xl font-headline font-bold">Extraction Hub</h1>
+            <p className="text-[10px] text-muted-foreground">Distributed compute nodes for SOLAR generation.</p>
           </div>
-          <div className="flex gap-2">
-            <Badge variant="outline" className="text-[10px] h-6 px-2">Active Node</Badge>
-            <Badge variant="outline" className="text-[10px] h-6 px-2 text-secondary border-secondary/20">Efficiency 100%</Badge>
+          <div className="flex gap-1.5">
+            <Badge variant="outline" className="text-[8px] h-5 px-1.5">Active Node</Badge>
+            <Badge variant="outline" className="text-[8px] h-5 px-1.5 text-secondary border-secondary/20">100% Efficient</Badge>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="lg:col-span-3 glass-card relative overflow-hidden flex flex-col">
-            <CardHeader className="py-3 border-b border-white/5 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm md:text-base flex items-center gap-2">
-                <Power className={isMining ? "text-primary animate-pulse w-4 h-4" : "text-muted-foreground w-4 h-4"} />
+            <CardHeader className="py-2 px-4 border-b border-white/5 flex flex-row items-center justify-between">
+              <CardTitle className="text-xs flex items-center gap-2">
+                <Power className={isMining ? "text-primary animate-pulse w-3 h-3" : "text-muted-foreground w-3 h-3"} />
                 Reactor
               </CardTitle>
               <div className="text-right">
-                <p className="text-[9px] text-muted-foreground uppercase">Rate</p>
-                <p className="text-xs font-bold text-green-500">420 GH/S</p>
+                <p className="text-[8px] text-muted-foreground uppercase">Rate</p>
+                <p className="text-[10px] font-bold text-green-500">420 GH/S</p>
               </div>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col items-center justify-center py-8 md:py-12">
-              <div className="relative mb-8 md:mb-12">
-                <div className={`w-48 h-48 md:w-64 md:h-64 rounded-full border border-white/5 flex items-center justify-center transition-all duration-700 ${isMining ? 'border-primary glow-primary shadow-[0_0_30px_rgba(0,102,255,0.1)]' : ''}`}>
+            <CardContent className="flex-1 flex flex-col items-center justify-center py-6 md:py-10">
+              <div className="relative mb-6 md:mb-8">
+                <div className={`w-36 h-36 md:w-48 md:h-48 rounded-full border border-white/5 flex items-center justify-center transition-all duration-700 ${isMining ? 'border-primary glow-primary shadow-[0_0_20px_rgba(0,102,255,0.05)]' : ''}`}>
                   <div className="text-center z-10">
-                    <h2 className="text-3xl md:text-4xl font-bold font-headline mb-0.5 tabular-nums">
+                    <h2 className="text-2xl md:text-3xl font-bold font-headline mb-0.5 tabular-nums">
                       {accumulated.toFixed(5)}
                     </h2>
-                    <p className="text-[9px] font-bold text-secondary uppercase tracking-widest">Unclaimed</p>
+                    <p className="text-[8px] font-bold text-secondary uppercase tracking-widest">Unclaimed</p>
                   </div>
                   {isMining && (
-                    <div className="absolute inset-0 rounded-full border border-primary/10 animate-ping opacity-20" />
+                    <div className="absolute inset-0 rounded-full border border-primary/10 animate-ping opacity-10" />
                   )}
                 </div>
               </div>
 
-              <div className="w-full max-w-md space-y-3 mb-8">
-                <div className="flex justify-between text-[10px] md:text-xs">
+              <div className="w-full max-w-xs space-y-2 mb-6">
+                <div className="flex justify-between text-[9px]">
                   <span className="text-muted-foreground">Yield Speed</span>
                   <span className="text-primary font-bold">{userData?.miningRate || 0.4} SOLAR / HR</span>
                 </div>
-                <Progress value={isMining ? 100 : 0} className="h-1.5 bg-white/5" />
+                <Progress value={isMining ? 100 : 0} className="h-1 bg-white/5" />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full max-w-lg">
+              <div className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
                 <Button 
                   onClick={handleToggleMining}
-                  className={`flex-1 h-14 text-sm font-bold rounded-xl transition-all ${isMining ? 'bg-destructive/10 text-destructive border-destructive' : 'bg-primary text-white glow-primary'}`}
+                  className={`flex-1 h-11 text-xs font-bold rounded-lg transition-all ${isMining ? 'bg-destructive/10 text-destructive border-destructive' : 'bg-primary text-white glow-primary'}`}
                 >
                   {isMining ? 'Stop Node' : 'Start Mining'}
                 </Button>
@@ -155,37 +155,37 @@ export default function MiningPage() {
                   onClick={handleClaim}
                   disabled={accumulated < 0.0001}
                   variant="outline"
-                  className="flex-1 h-14 text-sm font-bold rounded-xl border-white/10"
+                  className="flex-1 h-11 text-xs font-bold rounded-lg border-white/10"
                 >
-                  Bridge to Balance
+                  Bridge
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex flex-col gap-4">
-            <Card className="glass-card flex-1 bg-black/40 h-[240px] md:h-auto overflow-hidden flex flex-col">
-              <CardHeader className="py-2 border-b border-white/5">
-                <p className="text-[9px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <Terminal className="w-3 h-3" />
+          <div className="flex flex-col gap-3">
+            <Card className="glass-card flex-1 bg-black/40 h-[180px] md:h-auto overflow-hidden flex flex-col">
+              <CardHeader className="py-1.5 px-3 border-b border-white/5">
+                <p className="text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                  <Terminal className="w-2.5 h-2.5" />
                   Analytics
                 </p>
               </CardHeader>
-              <CardContent ref={terminalRef} className="p-3 font-mono text-[9px] text-primary/70 overflow-y-auto scrollbar-hide space-y-1">
+              <CardContent ref={terminalRef} className="p-2 font-mono text-[8px] text-primary/70 overflow-y-auto scrollbar-hide space-y-0.5">
                 {logs.map((log, i) => (
                   <div key={i} className="leading-tight truncate">{log}</div>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="glass-card p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                  <Database className="w-4 h-4" />
+            <Card className="glass-card p-3">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                  <Database className="w-3.5 h-3.5" />
                 </div>
-                <div>
-                  <p className="text-[9px] text-muted-foreground uppercase">Sync Status</p>
-                  <p className="text-sm font-bold truncate">Block #1,882,442</p>
+                <div className="min-w-0">
+                  <p className="text-[8px] text-muted-foreground uppercase">Sync Status</p>
+                  <p className="text-[10px] font-bold truncate">Block #1.8M</p>
                 </div>
               </div>
             </Card>

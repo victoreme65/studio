@@ -10,10 +10,8 @@ import {
   ShieldCheck, 
   Users, 
   Zap, 
-  TrendingUp, 
   Plus,
   Search,
-  Settings,
   MoreVertical,
   RefreshCcw,
   Loader2
@@ -67,92 +65,93 @@ export default function AdminPage() {
 
   return (
     <Shell>
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 px-1">
           <div>
-            <h1 className="text-3xl font-headline font-bold flex items-center gap-2 text-white">
-              <ShieldCheck className="text-primary" />
-              Admin Command Center
+            <h1 className="text-xl md:text-2xl font-headline font-bold flex items-center gap-2 text-white">
+              <ShieldCheck className="text-primary w-6 h-6" />
+              Admin Command
             </h1>
-            <p className="text-muted-foreground">Manage Solar AI ecosystem, users, and content.</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Ecosystem Management Portal.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 w-full md:w-auto">
             <Button 
               onClick={handleSeedData} 
               disabled={isSeeding}
               variant="outline" 
-              className="border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+              size="sm"
+              className="flex-1 md:flex-none h-9 border-primary/20 bg-primary/5 text-primary text-[10px] font-bold"
             >
-              {isSeeding ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCcw className="w-4 h-4 mr-2" />}
-              Synchronize AI Nodes
+              {isSeeding ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : <RefreshCcw className="w-3 h-3 mr-1.5" />}
+              Sync Nodes
             </Button>
-            <Button className="bg-primary hover:bg-primary/90 text-white">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button size="sm" className="flex-1 md:flex-none h-9 bg-primary hover:bg-primary/90 text-white text-[10px] font-bold">
+              <Plus className="w-3 h-3 mr-1.5" />
               New Asset
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
           {[
             { label: 'Network Users', value: users?.length || '0', sub: 'Live connections', icon: Users },
             { label: 'AI Compute', value: 'Quantum-9', sub: 'Nominal state', icon: Zap },
             { label: 'System Health', value: '99.9%', sub: 'All nodes online', icon: ShieldCheck },
           ].map((stat, i) => (
             <Card key={i} className="glass-card">
-              <CardContent className="p-6 flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-white/5 text-primary">
-                  <stat.icon className="w-6 h-6" />
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="p-1.5 rounded-lg bg-white/5 text-primary shrink-0">
+                  <stat.icon className="w-4 h-4" />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <h3 className="text-2xl font-bold font-headline text-white">{stat.value}</h3>
-                  <p className="text-xs text-green-500 mt-0.5">{stat.sub}</p>
+                <div className="min-w-0">
+                  <p className="text-[8px] text-muted-foreground uppercase">{stat.label}</p>
+                  <h3 className="text-sm md:text-base font-bold font-headline text-white truncate">{stat.value}</h3>
+                  <p className="text-[7px] text-green-500 truncate">{stat.sub}</p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl">
-            <TabsTrigger value="users" className="rounded-lg data-[state=active]:bg-primary">Entities</TabsTrigger>
-            <TabsTrigger value="logs" className="rounded-lg data-[state=active]:bg-primary">System Logs</TabsTrigger>
+        <Tabs defaultValue="users" className="space-y-3">
+          <TabsList className="bg-white/5 border border-white/10 h-9 p-1 rounded-xl">
+            <TabsTrigger value="users" className="rounded-lg h-7 text-[10px] data-[state=active]:bg-primary">Registry</TabsTrigger>
+            <TabsTrigger value="logs" className="rounded-lg h-7 text-[10px] data-[state=active]:bg-primary">Security</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users" className="space-y-4">
+          <TabsContent value="users" className="space-y-3">
             <Card className="glass-card">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg text-white">User Registry</CardTitle>
-                <div className="relative w-full max-w-sm">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Search neural signatures..." className="pl-10 bg-white/5 border-white/10" />
+              <CardHeader className="flex flex-row items-center justify-between py-2.5 px-4 border-b border-white/5">
+                <CardTitle className="text-xs text-white">User Registry</CardTitle>
+                <div className="relative w-full max-w-[180px]">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                  <Input placeholder="Search..." className="h-7 text-[10px] pl-7 bg-white/5 border-white/10 rounded-lg" />
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 {isUsersLoading ? (
-                  <div className="flex justify-center py-8"><Loader2 className="animate-spin text-primary" /></div>
+                  <div className="flex justify-center py-6"><Loader2 className="animate-spin text-primary w-5 h-5" /></div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="divide-y divide-white/5">
                     {users?.map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <Avatar className="w-10 h-10">
+                      <div key={user.id} className="flex items-center justify-between px-4 py-2 hover:bg-white/5 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-8 h-8 border border-white/10">
                             <AvatarImage src={`https://picsum.photos/seed/${user.id}/200`} />
                             <AvatarFallback>{user.username[0]}</AvatarFallback>
                           </Avatar>
-                          <div>
-                            <p className="font-bold text-white">{user.username}</p>
-                            <p className="text-xs text-muted-foreground">{user.email || 'Wallet Connected'}</p>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold text-white truncate">{user.username}</p>
+                            <p className="text-[8px] text-muted-foreground truncate">{user.email || 'Wallet Session'}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                           <div className="text-right hidden sm:block">
-                            <p className="text-sm font-bold text-primary">{user.balance?.toLocaleString()} SOLAR</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">{user.vipStatus ? 'VIP Elite' : 'Standard'}</p>
+                            <p className="text-[10px] font-bold text-primary">{user.balance?.toLocaleString()} SOLAR</p>
+                            <p className="text-[8px] text-muted-foreground uppercase">{user.vipStatus ? 'VIP' : 'STD'}</p>
                           </div>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                          <Button variant="ghost" size="icon" className="w-7 h-7">
+                            <MoreVertical className="w-3 h-3 text-muted-foreground" />
                           </Button>
                         </div>
                       </div>
@@ -165,19 +164,19 @@ export default function AdminPage() {
 
           <TabsContent value="logs">
             <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="text-lg text-white">Neural Security Stream</CardTitle>
+              <CardHeader className="py-2.5 px-4 border-b border-white/5">
+                <CardTitle className="text-xs text-white uppercase tracking-widest">Neural Stream</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3 font-mono text-[10px] sm:text-xs text-muted-foreground">
+              <CardContent className="p-3">
+                <div className="space-y-1.5 font-mono text-[9px] text-muted-foreground">
                   {[
-                    `[${new Date().toISOString()}] SECURITY: Admin initialized node synchronization.`,
-                    `[${new Date().toISOString()}] SYSTEM: AI Signal generated for BTC/USDT (Confidence 88%)`,
-                    `[${new Date().toISOString()}] AUTH: New registration signature detected on cluster-01.`,
-                    `[${new Date().toISOString()}] SYSTEM: Daily node synchronization complete.`,
-                    `[${new Date().toISOString()}] WARNING: High server load detected on Mining-Node-04`,
+                    `[${new Date().toISOString()}] SECURITY: Node sync init.`,
+                    `[${new Date().toISOString()}] SYSTEM: AI Signal generated.`,
+                    `[${new Date().toISOString()}] AUTH: New signature detected.`,
+                    `[${new Date().toISOString()}] SYSTEM: Global sync complete.`,
+                    `[${new Date().toISOString()}] WARNING: Cluster load rising.`,
                   ].map((log, i) => (
-                    <div key={i} className={`p-2 rounded border-l-2 ${log.includes('WARNING') ? 'border-secondary bg-secondary/5' : log.includes('SECURITY') ? 'border-primary bg-primary/5' : 'border-white/10 bg-white/5'}`}>
+                    <div key={i} className={`p-1.5 rounded border-l-2 ${log.includes('WARNING') ? 'border-secondary bg-secondary/5' : log.includes('SECURITY') ? 'border-primary bg-primary/5' : 'border-white/10 bg-white/5'}`}>
                       {log}
                     </div>
                   ))}

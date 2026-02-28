@@ -5,7 +5,7 @@ import { Shell } from '@/components/layout/Shell';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageSquareCode, Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
 import { interactiveAiTradingAssistant } from '@/ai/flows/interactive-ai-trading-assistant-flow';
 
 type Message = {
@@ -47,30 +47,30 @@ export default function AssistantPage() {
 
   return (
     <Shell>
-      <div className="h-[calc(100vh-120px)] flex flex-col max-w-4xl mx-auto gap-6">
-        <div className="flex items-center justify-between">
+      <div className="h-[calc(100vh-100px)] flex flex-col max-w-4xl mx-auto gap-3 md:gap-4">
+        <div className="flex items-center justify-between px-1">
           <div>
-            <h1 className="text-3xl font-headline font-bold flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-headline font-bold flex items-center gap-2">
               AI Assistant
-              <Sparkles className="w-6 h-6 text-secondary fill-current" />
+              <Sparkles className="w-5 h-5 text-secondary fill-current" />
             </h1>
-            <p className="text-muted-foreground">Expert market analysis and trading advice at your fingertips.</p>
+            <p className="text-[10px] text-muted-foreground">Expert market analysis at your fingertips.</p>
           </div>
         </div>
 
         <Card className="flex-1 glass-card overflow-hidden flex flex-col">
-          <CardContent className="flex-1 p-0 flex flex-col h-full">
+          <CardContent className="flex-1 p-0 flex flex-col h-full overflow-hidden">
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
+              className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
             >
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-3 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${m.role === 'assistant' ? 'bg-primary text-white' : 'bg-white/10 text-muted-foreground'}`}>
-                      {m.role === 'assistant' ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                  <div className={`flex gap-2.5 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${m.role === 'assistant' ? 'bg-primary text-white' : 'bg-white/10 text-muted-foreground'}`}>
+                      {m.role === 'assistant' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
                     </div>
-                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${m.role === 'assistant' ? 'bg-white/5 border border-white/5 rounded-tl-none' : 'bg-primary text-white rounded-tr-none'}`}>
+                    <div className={`p-3 rounded-xl text-xs leading-relaxed ${m.role === 'assistant' ? 'bg-white/5 border border-white/5 rounded-tl-none text-white' : 'bg-primary text-white rounded-tr-none'}`}>
                       {m.content}
                     </div>
                   </div>
@@ -78,24 +78,24 @@ export default function AssistantPage() {
               ))}
               {loading && (
                 <div className="flex justify-start">
-                  <div className="flex gap-3 max-w-[85%]">
-                    <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center shrink-0">
-                      <Bot className="w-5 h-5" />
+                  <div className="flex gap-2.5 max-w-[85%]">
+                    <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center shrink-0">
+                      <Bot className="w-4 h-4" />
                     </div>
-                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5 rounded-tl-none flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                      <span className="text-xs text-muted-foreground">Analyzing markets...</span>
+                    <div className="p-3 rounded-xl bg-white/5 border border-white/5 rounded-tl-none flex items-center gap-2">
+                      <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                      <span className="text-[10px] text-muted-foreground">Analyzing...</span>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="p-4 bg-background/50 border-t border-white/5">
+            <div className="p-3 bg-background/50 border-t border-white/5">
               <div className="flex gap-2">
                 <Input 
-                  placeholder="Ask about any crypto or trading strategy..." 
-                  className="flex-1 bg-white/5 border-white/10 h-12 focus-visible:ring-primary rounded-xl"
+                  placeholder="Ask about crypto..." 
+                  className="flex-1 bg-white/5 border-white/10 h-10 text-xs focus-visible:ring-primary rounded-xl"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -103,17 +103,18 @@ export default function AssistantPage() {
                 <Button 
                   onClick={handleSend}
                   disabled={loading || !input.trim()}
-                  className="bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-xl p-0"
+                  size="icon"
+                  className="bg-primary hover:bg-primary/90 text-white w-10 h-10 rounded-xl"
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="mt-3 flex gap-2">
-                {['Is BTC bullish?', 'Top 3 crypto signals', 'Mining profitability'].map((suggestion) => (
+              <div className="mt-2.5 flex gap-1.5 flex-wrap">
+                {['Is BTC bullish?', 'Top signals', 'Mining profit'].map((suggestion) => (
                   <button
                     key={suggestion}
                     onClick={() => setInput(suggestion)}
-                    className="text-[10px] px-3 py-1.5 rounded-full glass border border-white/5 text-muted-foreground hover:text-white hover:border-primary/30 transition-all"
+                    className="text-[9px] px-2.5 py-1 rounded-full glass border border-white/5 text-muted-foreground hover:text-white hover:border-primary/30 transition-all"
                   >
                     {suggestion}
                   </button>

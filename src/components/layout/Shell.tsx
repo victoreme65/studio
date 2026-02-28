@@ -18,7 +18,9 @@ import {
   LogOut,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  TrendingUp as TrendUp,
+  TrendingDown as TrendDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -37,6 +39,15 @@ const navItems = [
   { label: 'Assistant', icon: MessageSquareCode, href: '/assistant' },
 ];
 
+const TICKER_DATA = [
+  { pair: 'BTC/USD', price: 64520.45, change: 2.45 },
+  { pair: 'ETH/USD', price: 3421.12, change: -1.20 },
+  { pair: 'SOL/USD', price: 142.88, change: 8.12 },
+  { pair: 'BNB/USD', price: 588.22, change: 0.45 },
+  { pair: 'XRP/USD', price: 0.62, change: -0.12 },
+  { pair: 'ADA/USD', price: 0.45, change: 1.15 },
+];
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -47,7 +58,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
   const db = useFirestore();
 
-  // Avoid hydration mismatch by waiting until mounted to show theme-specific UI
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -68,25 +78,27 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-background text-foreground cyber-grid">
       {/* Sidebar Desktop */}
       <aside className="hidden lg:flex w-72 flex-col fixed inset-y-0 border-r border-border bg-card/40 backdrop-blur-3xl z-50">
-        <div className="p-8 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center glow-primary group-hover:scale-110 transition-transform">
-              <Zap className="text-white w-6 h-6 fill-current" />
-            </div>
-            <span className="font-headline font-bold text-2xl tracking-tighter">SOLAR AI</span>
-          </Link>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="rounded-xl"
-          >
-            {mounted ? (
-              theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
-            ) : (
-              <div className="w-4 h-4" />
-            )}
-          </Button>
+        <div className="p-8 flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center glow-primary group-hover:scale-110 transition-transform">
+                <Zap className="text-white w-6 h-6 fill-current" />
+              </div>
+              <span className="font-headline font-bold text-2xl tracking-tighter">SOLAR AI</span>
+            </Link>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-xl"
+            >
+              {mounted ? (
+                theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
+              ) : (
+                <div className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
         </div>
 
         <nav className="flex-1 px-6 py-4 space-y-2">
@@ -150,10 +162,28 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <main className="flex-1 lg:pl-72 flex flex-col min-h-screen relative">
+        {/* Ticker Header */}
+        <div className="h-10 bg-black/40 border-b border-border flex items-center overflow-hidden z-40">
+          <div className="marquee">
+            <div className="marquee-content gap-12 px-6">
+              {[...TICKER_DATA, ...TICKER_DATA].map((ticker, i) => (
+                <div key={i} className="flex items-center gap-2 text-[10px] font-mono">
+                  <span className="text-muted-foreground">{ticker.pair}</span>
+                  <span className="text-white">${ticker.price.toLocaleString()}</span>
+                  <span className={ticker.change >= 0 ? 'text-green-500' : 'text-destructive'}>
+                    {ticker.change >= 0 ? '+' : ''}{ticker.change}%
+                  </span>
+                  {ticker.change >= 0 ? <TrendUp className="w-2.5 h-2.5 text-green-500" /> : <TrendDown className="w-2.5 h-2.5 text-destructive" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/5 blur-[120px] pointer-events-none -z-10" />
         
         {/* Mobile Header */}
-        <header className="lg:hidden h-20 flex items-center justify-between px-6 border-b border-border glass sticky top-0 z-40">
+        <header className="lg:hidden h-20 flex items-center justify-between px-6 border-b border-border glass sticky top-10 z-40">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
               <Zap className="text-white w-6 h-6 fill-current" />

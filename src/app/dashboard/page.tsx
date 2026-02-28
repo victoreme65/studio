@@ -13,7 +13,9 @@ import {
   Activity,
   ArrowRight,
   Loader2,
-  TrendingUp
+  TrendingUp,
+  BrainCircuit,
+  Binary
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,12 +47,31 @@ export default function Dashboard() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const [ticker, setTicker] = useState(64520.45);
+  const [neuralLogs, setNeuralLogs] = useState<string[]>([]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const tickerInterval = setInterval(() => {
       setTicker(prev => prev + (Math.random() - 0.5) * 50);
     }, 3000);
-    return () => clearInterval(interval);
+
+    const neuralMessages = [
+      "Analyzing BTC hash rate vectors...",
+      "Detected pattern breakout on ETH/USDT 4H",
+      "Sentiment shift detected on X/Twitter clusters",
+      "Optimizing trade execution parameters",
+      "Neural link established with Node-9",
+      "Calculating liquidation clusters for SOL",
+    ];
+
+    const logInterval = setInterval(() => {
+      const msg = neuralMessages[Math.floor(Math.random() * neuralMessages.length)];
+      setNeuralLogs(prev => [msg, ...prev].slice(0, 5));
+    }, 4000);
+
+    return () => {
+      clearInterval(tickerInterval);
+      clearInterval(logInterval);
+    };
   }, []);
 
   const userRef = useMemoFirebase(() => {
@@ -89,15 +110,15 @@ export default function Dashboard() {
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
-            <h1 className="text-4xl font-headline font-bold tracking-tight">Command Center</h1>
+            <h1 className="text-4xl font-headline font-bold tracking-tight">Financial Command</h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Activity className="w-4 h-4 text-primary animate-pulse" />
-              <span>BTC/USD: <span className="text-white font-mono">${ticker.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
+              <span>Network: <span className="text-white font-mono">BTC @ ${ticker.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></span>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="border-secondary/50 text-secondary bg-secondary/10 px-4 py-1.5 rounded-full font-bold">
-              {userData?.vipStatus ? 'VIP LEVEL 1' : 'STANDARD TIER'}
+              {userData?.vipStatus ? 'VIP ELITE' : 'STANDARD TIER'}
             </Badge>
             {!userData?.vipStatus && (
               <Button 
@@ -114,9 +135,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00', sub: `+${userData?.miningRate || 0}/H`, icon: Coins, color: 'text-secondary' },
-            { label: 'Mining Status', value: 'ACTIVE', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary' },
-            { label: 'Vault Balance', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Secured', icon: ShieldCheck, color: 'text-green-500' },
-            { label: 'Network Code', value: userData?.referralCode || 'N/A', sub: 'Earn 25%', icon: UserPlus, color: 'text-purple-500' },
+            { label: 'Mining State', value: 'NOMINAL', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary' },
+            { label: 'Asset Vault', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Staked Funds', icon: ShieldCheck, color: 'text-green-500' },
+            { label: 'Referral Code', value: userData?.referralCode || 'N/A', sub: 'Share & Earn', icon: UserPlus, color: 'text-purple-500' },
           ].map((stat, i) => (
             <Card key={i} className="glass-card group overflow-hidden">
               <CardContent className="p-6">
@@ -137,8 +158,11 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 glass-card">
             <CardHeader className="flex flex-row items-center justify-between border-b border-white/5">
-              <CardTitle className="text-lg font-headline font-bold">Value Trajectory</CardTitle>
-              <Badge variant="outline" className="text-[10px]">LIVE FEED</Badge>
+              <CardTitle className="text-lg font-headline font-bold flex items-center gap-2">
+                <BrainCircuit className="w-5 h-5 text-primary" />
+                Value Trajectory
+              </CardTitle>
+              <Badge variant="outline" className="text-[10px]">LIVE ANALYSIS</Badge>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="h-[300px] w-full">
@@ -158,6 +182,20 @@ export default function Dashboard() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
+              
+              <div className="mt-6 p-4 rounded-xl bg-black/40 border border-white/5 space-y-2">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Binary className="w-3 h-3" />
+                  AI Neural Stream
+                </p>
+                <div className="space-y-1">
+                  {neuralLogs.map((log, i) => (
+                    <p key={i} className="text-[10px] font-mono text-primary/80 animate-in fade-in slide-in-from-left-2">
+                      > {log}
+                    </p>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -167,7 +205,7 @@ export default function Dashboard() {
               <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-white/5 h-[400px] overflow-y-auto scrollbar-hide">
                 {signals?.map((signal, i) => (
                   <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
                     <div className="flex items-center gap-3">
@@ -186,12 +224,12 @@ export default function Dashboard() {
                   </div>
                 ))}
                 {!signals?.length && !isSignalsLoading && (
-                  <div className="p-10 text-center text-muted-foreground text-sm">Synchronizing network...</div>
+                  <div className="p-10 text-center text-muted-foreground text-sm">Waiting for AI sync...</div>
                 )}
               </div>
               <div className="p-4 bg-white/5">
                 <Button variant="ghost" className="w-full text-xs text-primary gap-2" asChild>
-                  <Link href="/signals">Full Terminal <ArrowRight className="w-3 h-3" /></Link>
+                  <Link href="/signals">Signal Terminal <ArrowRight className="w-3 h-3" /></Link>
                 </Button>
               </div>
             </CardContent>

@@ -78,6 +78,23 @@
     background-image: linear-gradient(to right, rgba(255,255,255,0.01) 1px, transparent 1px),
                       linear-gradient(to bottom, rgba(255,255,255,0.01) 1px, transparent 1px);
   }
+
+  .marquee {
+    @apply flex whitespace-nowrap overflow-hidden;
+  }
+
+  .marquee-content {
+    @apply flex animate-marquee;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
 }
 
 .animate-glow {

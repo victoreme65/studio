@@ -1,0 +1,446 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user account on the Solar AI platform, storing profile information, balances, mining status, and referral details.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's chosen display name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, used for login.",
+          "format": "email"
+        },
+        "balance": {
+          "type": "number",
+          "description": "The current balance of SOLAR tokens held by the user."
+        },
+        "miningRate": {
+          "type": "number",
+          "description": "The current rate at which the user is mining SOLAR tokens per hour."
+        },
+        "lastMiningTime": {
+          "type": "string",
+          "description": "Timestamp of the last time the user's mining earnings were calculated and added to their balance.",
+          "format": "date-time"
+        },
+        "referralCode": {
+          "type": "string",
+          "description": "A unique code generated for the user, which can be shared for referrals."
+        },
+        "referredBy": {
+          "type": "string",
+          "description": "Reference to the User ID of the referrer, if this user was referred by another. (Relationship: User 1:N User)"
+        },
+        "vipStatus": {
+          "type": "boolean",
+          "description": "Indicates whether the user has VIP status, granting access to premium features and benefits."
+        },
+        "stakingBalance": {
+          "type": "number",
+          "description": "The total amount of SOLAR tokens currently locked in staking by the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "balance",
+        "miningRate",
+        "lastMiningTime",
+        "referralCode",
+        "vipStatus",
+        "stakingBalance",
+        "createdAt"
+      ]
+    },
+    "Signal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Signal",
+      "type": "object",
+      "description": "Stores AI-generated cryptocurrency and forex trading signals.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Signal entity."
+        },
+        "pair": {
+          "type": "string",
+          "description": "The trading pair for the signal (e.g., BTC/USDT, EUR/USD)."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of trade recommended (e.g., BUY or SELL)."
+        },
+        "entry": {
+          "type": "number",
+          "description": "The recommended entry price for the trade."
+        },
+        "takeProfit": {
+          "type": "number",
+          "description": "The recommended take-profit price target."
+        },
+        "stopLoss": {
+          "type": "number",
+          "description": "The recommended stop-loss price level."
+        },
+        "confidence": {
+          "type": "number",
+          "description": "The confidence level (0-100) of the AI in this signal."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the signal was generated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "pair",
+        "type",
+        "entry",
+        "takeProfit",
+        "stopLoss",
+        "confidence",
+        "timestamp"
+      ]
+    },
+    "Prediction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Prediction",
+      "type": "object",
+      "description": "Stores AI-generated price predictions for various assets.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Prediction entity."
+        },
+        "asset": {
+          "type": "string",
+          "description": "The asset for which the prediction is made (e.g., BTC, ETH, EUR/USD)."
+        },
+        "trend": {
+          "type": "string",
+          "description": "The predicted trend for the asset (e.g., UP, DOWN, SIDEWAYS)."
+        },
+        "confidence": {
+          "type": "number",
+          "description": "The confidence level (0-100) of the AI in this prediction."
+        },
+        "targetPrice": {
+          "type": "number",
+          "description": "The predicted target price for the asset, if applicable."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the prediction was generated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "asset",
+        "trend",
+        "confidence",
+        "timestamp"
+      ]
+    },
+    "MiningLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MiningLog",
+      "type": "object",
+      "description": "Records individual instances of SOLAR token mining earnings for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MiningLog entry."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who performed the mining. (Relationship: User 1:N MiningLog)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of SOLAR tokens earned in this specific mining period."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when these mining earnings were calculated and logged.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "amount",
+        "timestamp"
+      ]
+    },
+    "Referral": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Referral",
+      "type": "object",
+      "description": "Records the relationship between a referrer and a referred user, and associated rewards.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Referral entry."
+        },
+        "referrerId": {
+          "type": "string",
+          "description": "Reference to the User ID of the referrer. (Relationship: User 1:N Referral)"
+        },
+        "referredUserId": {
+          "type": "string",
+          "description": "Reference to the User ID of the user who was referred. (Relationship: User 1:N Referral)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp when the referral relationship was established.",
+          "format": "date-time"
+        },
+        "rewardAmount": {
+          "type": "number",
+          "description": "The amount of SOLAR tokens earned by the referrer for this specific referral instance, if applicable."
+        }
+      },
+      "required": [
+        "id",
+        "referrerId",
+        "referredUserId",
+        "timestamp"
+      ]
+    },
+    "StakingTransaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StakingTransaction",
+      "type": "object",
+      "description": "Tracks individual staking commitments made by users, including details about duration, rewards, and status.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StakingTransaction entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who initiated this staking transaction. (Relationship: User 1:N StakingTransaction)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of SOLAR tokens committed to this staking transaction."
+        },
+        "durationDays": {
+          "type": "number",
+          "description": "The duration of the staking period in days (e.g., 7, 14, 30)."
+        },
+        "interestRate": {
+          "type": "number",
+          "description": "The annual interest rate (e.g., 0.05 for 5%) applied to this staking transaction."
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Timestamp when the staking transaction began and tokens were locked.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "Timestamp when the staking period is scheduled to end and tokens become available for withdrawal.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the staking transaction (e.g., 'active', 'completed', 'withdrawn')."
+        },
+        "rewardEarned": {
+          "type": "number",
+          "description": "The total amount of SOLAR tokens earned as reward from this staking transaction upon completion."
+        },
+        "withdrawalTime": {
+          "type": "string",
+          "description": "Timestamp when the staked tokens and rewards were actually withdrawn by the user.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "amount",
+        "durationDays",
+        "interestRate",
+        "startTime",
+        "endTime",
+        "status"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores individual user profiles and their core data. Accessible only by the owning user (request.auth.uid matches userId) or an administrator. `id` field within the User schema will be used as the document ID {userId}."
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Dedicated collection to grant administrator privileges. The presence of a document in this collection with a user's ID ({userId}) signifies that user is an administrator. Used for DBAC (Database Access Control) checks. No specific schema for the document content, existence is key.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who is an administrator."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/signals_public/{signalId}",
+        "definition": {
+          "entityName": "Signal",
+          "schema": {
+            "$ref": "#/backend/entities/Signal"
+          },
+          "description": "Stores AI-generated trading signals accessible to all authenticated users. Read-only for users, writeable only by administrators.",
+          "params": [
+            {
+              "name": "signalId",
+              "description": "The unique identifier for the AI trading signal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/signals_vip/{signalId}",
+        "definition": {
+          "entityName": "Signal",
+          "schema": {
+            "$ref": "#/backend/entities/Signal"
+          },
+          "description": "Stores AI-generated trading signals exclusively for VIP users. Read access requires checking the user's `vipStatus` from their user document. Writeable only by administrators.",
+          "params": [
+            {
+              "name": "signalId",
+              "description": "The unique identifier for the AI VIP trading signal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/predictions_public/{predictionId}",
+        "definition": {
+          "entityName": "Prediction",
+          "schema": {
+            "$ref": "#/backend/entities/Prediction"
+          },
+          "description": "Stores AI-generated price predictions accessible to all authenticated users. Read-only for users, writeable only by administrators.",
+          "params": [
+            {
+              "name": "predictionId",
+              "description": "The unique identifier for the AI price prediction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/predictions_vip/{predictionId}",
+        "definition": {
+          "entityName": "Prediction",
+          "schema": {
+            "$ref": "#/backend/entities/Prediction"
+          },
+          "description": "Stores AI-generated price predictions exclusively for VIP users. Read access requires checking the user's `vipStatus` from their user document. Writeable only by administrators.",
+          "params": [
+            {
+              "name": "predictionId",
+              "description": "The unique identifier for the AI VIP price prediction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/miningLogs/{miningLogId}",
+        "definition": {
+          "entityName": "MiningLog",
+          "schema": {
+            "$ref": "#/backend/entities/MiningLog"
+          },
+          "description": "Records individual instances of SOLAR token mining earnings for a specific user. This subcollection is strictly owned by the user identified by `userId` in the path, matching `request.auth.uid`. Includes denormalized 'userId' field for authorization clarity.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this mining log."
+            },
+            {
+              "name": "miningLogId",
+              "description": "The unique identifier for a specific mining log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/referrals/{referralId}",
+        "definition": {
+          "entityName": "Referral",
+          "schema": {
+            "$ref": "#/backend/entities/Referral"
+          },
+          "description": "Records the relationship between a referrer and a referred user, and associated rewards. Documents are accessible to both the `referrerId` and `referredUserId` explicitly stated within the document for authorization independence.",
+          "params": [
+            {
+              "name": "referralId",
+              "description": "The unique identifier for a specific referral relationship."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/stakingTransactions/{stakingTransactionId}",
+        "definition": {
+          "entityName": "StakingTransaction",
+          "schema": {
+            "$ref": "#/backend/entities/StakingTransaction"
+          },
+          "description": "Tracks individual staking commitments made by users. This subcollection is strictly owned by the user identified by `userId` in the path, matching `request.auth.uid`. Includes denormalized 'userId' field for authorization clarity.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this staking transaction."
+            },
+            {
+              "name": "stakingTransactionId",
+              "description": "The unique identifier for a specific staking transaction."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure for Solar AI prioritizes **Authorization Independence** and **Structural Segregation** to ensure simple, robust, and easily debuggable security rules. Each collection is designed to have a homogeneous security posture, meaning all documents within a given collection share the same access requirements, thereby preventing complex conditional logic in rules.\n\n**Authorization Independence via Denormalization:**\n*   **User-Owned Subcollections:** For entities like `MiningLog` and `StakingTransaction`, which are strictly owned by a single user, they are structured as subcollections under the respective user's document (e.g., `/users/{userId}/miningLogs/{miningLogId}`). This inherently denormalizes the `userId` into the path itself. Security rules can then directly compare the path's `{userId}` wildcard with `request.auth.uid`, eliminating the need for `get()` calls to parent documents to verify ownership. This design ensures that creating, updating, or deleting these sub-documents is atomic and doesn't depend on the state or existence of a parent document for authorization.\n*   **Referral Entity:** The `Referral` collection, while top-level, explicitly includes `referrerId` and `referredUserId` fields within each document. This denormalizes the necessary authorization context directly into the document, allowing rules to directly check `request.auth.uid == resource.data.referrerId` or `request.auth.uid == resource.data.referredUserId` without needing to fetch other documents.\n*   **VIP Access:** For VIP-gated content (`/signals_vip`, `/predictions_vip`), access is determined by checking the requesting user's `vipStatus`. While this requires a `get(/users/$(request.auth.uid))` call in rules, it is a lookup of the *requesting user's own attributes*, not an external document's attributes to authorize access to the current document. This is an acceptable pattern that maintains authorization independence of the target document, as its intrinsic security posture isn't dependent on *another entity's* data.\n\n**Support for QAPs (Rules are not Filters):**\n*   **Structural Segregation:** We segregate `Signal` and `Prediction` entities into `_public` and `_vip` collections (`/signals_public`, `/signals_vip`, `/predictions_public`, `/predictions_vip`).\n    *   `_public` collections allow read access for all authenticated users. `list` operations are secure as the entire collection is uniformly accessible.\n    *   `_vip` collections allow read access *only* for authenticated users with `vipStatus: true`. `list` operations are secure because access is a binary check against the requesting user's known VIP status, ensuring that only authorized users can retrieve data from these collections.\n*   **Path-Based Ownership:** For user-specific subcollections like `/users/{userId}/miningLogs` and `/users/{userId}/stakingTransactions`, `list` operations are inherently secure. A user can only `list` documents within *their own* subcollection, as enforced by `request.auth.uid == userId` in the path, preventing unauthorized access to other users' data.\n*   **Referral List Security:** The `/referrals` collection requires client-side queries to filter by `referrerId` or `referredUserId`. Security rules will enforce that a user can only read/list `Referral` documents where `request.auth.uid` matches either the `referrerId` or `referredUserId` field, ensuring that `list` operations are correctly constrained to the user's own referrals.\n*   **Admin Roles:** A dedicated `/roles_admin/{userId}` collection enables secure and efficient admin checks using `get(/roles_admin/$(request.auth.uid)).exists()`. This ensures that only true administrators can perform privileged operations, including reading all users or modifying data in the segregated admin collections (if any specific admin-only collections are introduced).\n\nThis architecture simplifies security rules to direct path comparisons, field-level checks within the document, or simple attribute checks of the requesting user, promoting clarity, debuggability, and performance."
+  }
+}

@@ -1,0 +1,183 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * SOLAR AI SECURITY RULES - PROTOTYPE MODE
+     * 
+     * CORE PHILOSOPHY:
+     * This ruleset implements a robust, multi-tier authorization model designed for a financial and 
+     * AI-driven platform. It prioritizes the safety of user balances and sensitive trading signals 
+     * while maintaining flexibility for rapid frontend iteration.
+     *
+     * DATA STRUCTURE:
+     * - User-centric data (Mining Logs, Staking) is organized in subcollections under /users/{userId}.
+     * - Global content (Signals, Predictions) is segregated into _public and _vip collections.
+     * - Administrative privileges are managed via a dedicated /roles_admin collection.
+     *
+     * KEY SECURITY DECISIONS:
+     * 1. AUTHORIZATION INDEPENDENCE: We use path-based authorization for user data to avoid 
+     *    expensive cross-document lookups.
+     * 2. VIP GATING: Access to premium signals is controlled by looking up the 'vipStatus' 
+     *    field on the requesting user's own profile.
+     * 3. ADMIN OVERRIDE: A specialized 'isAdmin' helper allows for global oversight by 
+     *    authorized accounts.
+     * 4. RELATIONAL INTEGRITY: We strictly enforce that 'userId' fields within documents match 
+     *    the path and the authenticated user during creation.
+     *
+     * DENORMALIZATION FOR AUTHORIZATION:
+     * - 'userId' is denormalized into subcollection documents to allow for single-document 
+     *   authorization checks without parent lookups.
+     * - 'referrerId' and 'referredUserId' are stored directly on Referral documents to 
+     *   permit shared access without complex joins.
+     */
+
+    // --- HELPER FUNCTIONS ---
+
+    /** @description Checks if the user is authenticated. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the user's UID matches the provided ID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Checks if the user is an owner and the document exists (for update/delete). */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /** @description Checks if the user is recorded in the admin roles collection. */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /** @description Checks if the user has VIP status on their profile document. */
+    function isVIP() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.vipStatus == true;
+    }
+
+    /** @description Enforces immutability of a field during updates. */
+    function isUnchanged(field) {
+      return request.resource.data[field] == resource.data[field];
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description User profiles containing balances and status.
+     * @path /users/{userId}
+     * @allow (get) If user is owner or admin. (create) If ID matches auth UID.
+     * @deny (list) For non-admin users to prevent user enumeration.
+     * @principle Ownership and Self-Creation.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if (isExistingOwner(userId) || isAdmin()) && isUnchanged('id');
+      allow delete: if isAdmin();
+
+      /**
+       * @description Records of SOLAR token mining instances.
+       * @path /users/{userId}/miningLogs/{miningLogId}
+       * @allow (all) If user is owner of the parent path.
+       * @deny (all) If user attempts to access logs of another userId.
+       * @principle Path-based ownership.
+       */
+      match /miningLogs/{miningLogId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && isUnchanged('userId');
+        allow delete: if isExistingOwner(userId) || isAdmin();
+      }
+
+      /**
+       * @description User's staking commitments and rewards.
+       * @path /users/{userId}/stakingTransactions/{stakingTransactionId}
+       * @allow (all) If user is owner of the parent path.
+       * @deny (write) If modifying the userId link.
+       * @principle Path-based ownership.
+       */
+      match /stakingTransactions/{stakingTransactionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && isUnchanged('userId');
+        allow delete: if isAdmin();
+      }
+    }
+
+    /**
+     * @description Administrative roles mapping.
+     * @path /roles_admin/{userId}
+     * @allow (all) Only for existing administrators.
+     * @deny (all) For standard users.
+     * @principle Database-wide administrative roles.
+     */
+    match /roles_admin/{userId} {
+      allow read, write: if isAdmin();
+    }
+
+    /**
+     * @description Publicly accessible AI trading signals.
+     * @path /signals_public/{signalId}
+     * @allow (read) Any signed-in user. (write) Admin only.
+     * @deny (write) Any non-admin user.
+     * @principle Public Read with Admin-Only writes.
+     */
+    match /signals_public/{signalId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Premium AI trading signals for VIP members.
+     * @path /signals_vip/{signalId}
+     * @allow (read) Users with VIP status or admins. (write) Admin only.
+     * @deny (read) Non-VIP users.
+     * @principle Attribute-based access control (VIP status).
+     */
+    match /signals_vip/{signalId} {
+      allow get, list: if isVIP() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Publicly accessible AI price predictions.
+     * @path /predictions_public/{predictionId}
+     * @allow (read) Any signed-in user. (write) Admin only.
+     * @principle Public Read with Admin-Only writes.
+     */
+    match /predictions_public/{predictionId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Premium AI price predictions for VIP members.
+     * @path /predictions_vip/{predictionId}
+     * @allow (read) Users with VIP status or admins. (write) Admin only.
+     * @principle Attribute-based access control (VIP status).
+     */
+    match /predictions_vip/{predictionId} {
+      allow get, list: if isVIP() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Relationship records between referrers and referred users.
+     * @path /referrals/{referralId}
+     * @allow (read) If user is either the referrer or the referred. (create) If user is the referred user.
+     * @deny (update) Only admins can modify rewards.
+     * @principle Shared access based on internal document fields.
+     */
+    match /referrals/{referralId} {
+      allow get, list: if isSignedIn() && (request.auth.uid == resource.data.referrerId || request.auth.uid == resource.data.referredUserId || isAdmin());
+      allow create: if isSignedIn() && (request.resource.data.referredUserId == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

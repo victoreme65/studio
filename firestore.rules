@@ -32,9 +32,9 @@ service cloud.firestore {
     // --- COLLECTION RULES ---
 
     match /users/{userId} {
-      // For the prototype, we allow authenticated users to list profiles to avoid permission errors on the Admin/Leaderboard pages.
+      // Allow signed-in users to list for leaderboard/admin registry purposes in the prototype
+      allow list: if isSignedIn();
       allow get: if isOwner(userId) || isAdmin();
-      allow list: if isSignedIn(); 
       allow create: if isSignedIn();
       allow update: if (isOwner(userId) || isAdmin());
       allow delete: if isAdmin();
@@ -53,13 +53,13 @@ service cloud.firestore {
     }
 
     match /roles_admin/{userId} {
-      allow read, write: if isAdmin() || isOwner(userId); // Allow users to see their own admin role status
+      allow read, write: if isAdmin() || isOwner(userId);
     }
 
     // Publicly accessible AI trading signals
     match /signals_public/{signalId} {
-      allow read: if true; // Truly public
-      allow write: if isAdmin() || isSignedIn(); // Allow seeding in prototype
+      allow read: if true;
+      allow write: if isAdmin() || isSignedIn();
     }
 
     match /signals_vip/{signalId} {
@@ -69,7 +69,7 @@ service cloud.firestore {
 
     // Publicly accessible AI price predictions
     match /predictions_public/{predictionId} {
-      allow read: if true; // Truly public
+      allow read: if true;
       allow write: if isAdmin() || isSignedIn();
     }
 

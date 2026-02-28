@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Zap, Mail, Lock, User, ArrowLeft, Wallet, Loader2, CheckCircle, Smartphone } from 'lucide-react';
+import { Zap, Mail, Lock, User, ArrowLeft, Wallet, Loader2, CheckCircle, Smartphone, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth, useFirestore } from '@/firebase';
 import { doc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
-import { GoogleAuthProvider, signInWithPopup, signInAnonymously } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signInAnonymously, createUserWithEmailAndPassword } from 'firebase/auth';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -18,12 +18,23 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [otp, setOtp] = useState('');
+  const [simulatedOtp, setSimulatedOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
 
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
+
+  // Password Validation
+  const passCriteria = {
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[!@#$%^&*]/.test(password),
+  };
+  const isPassValid = Object.values(passCriteria).every(Boolean);
 
   useEffect(() => {
     const checkUsername = async () => {
@@ -64,13 +75,18 @@ export default function RegisterPage() {
   };
 
   const handleRegister = async () => {
-    if (!email || !password || !username) return;
+    if (!email || !password || !username || !isPassValid) return;
     setIsLoading(true);
     
     try {
-      // Simulate sending OTP
+      const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      setSimulatedOtp(newOtp);
       setStep(2);
-      toast({ title: "Verification Sent", description: "Check your email for the security code." });
+      toast({ 
+        title: "Verification Sent", 
+        description: `Your security code is: ${newOtp} (Simulation Mode)`,
+      });
+      console.log(`[REALTIME SIMULATION] Security code for ${email}: ${newOtp}`);
     } catch (error: any) {
       toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
     } finally {
@@ -79,10 +95,13 @@ export default function RegisterPage() {
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length !== 6) return;
+    if (otp !== simulatedOtp) {
+      toast({ title: "Verification Failed", description: "Invalid security code.", variant: "destructive" });
+      return;
+    }
     setIsLoading(true);
     try {
-      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await initializeUserProfile(userCredential.user.uid, { username, email });
       toast({ title: "Portal Initialized", description: "Welcome to Solar AI." });
       router.push('/dashboard');
@@ -96,7 +115,6 @@ export default function RegisterPage() {
   const handleWalletSignup = async () => {
     setIsLoading(true);
     try {
-      // Use Anonymous Auth to create a session for the wallet user
       const userCredential = await signInAnonymously(auth);
       const fakeAddress = `0x${Math.random().toString(16).slice(2, 42)}`;
       await initializeUserProfile(userCredential.user.uid, { 
@@ -127,7 +145,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden cyber-grid">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden cyber-grid text-foreground">
       <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(0,102,255,0.05),transparent)] pointer-events-none" />
       <div className="p-6">
         <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
@@ -138,7 +156,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <div className="inline-flex w-16 h-16 rounded-2xl bg-primary items-center justify-center mb-6 animate-glow">
+            <div className="inline-flex w-16 h-16 rounded-2xl bg-primary items-center justify-center mb-6 animate-glow shadow-primary/20 shadow-2xl">
               <Zap className="text-white w-10 h-10 fill-current" />
             </div>
             <h1 className="text-4xl font-headline font-bold">Initialize Portal</h1>
@@ -155,7 +173,7 @@ export default function RegisterPage() {
                       placeholder="Username" 
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                      className="bg-white/5 border-white/10 h-12 pl-10" 
+                      className="bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary" 
                     />
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
                       {usernameStatus === 'checking' && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
@@ -169,7 +187,7 @@ export default function RegisterPage() {
                       placeholder="Email Address" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white/5 border-white/10 h-12 pl-10" 
+                      className="bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary" 
                     />
                   </div>
 
@@ -180,14 +198,27 @@ export default function RegisterPage() {
                       placeholder="Security Key" 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white/5 border-white/10 h-12 pl-10" 
+                      className="bg-white/5 border-white/10 h-12 pl-10 focus-visible:ring-primary" 
                     />
+                  </div>
+
+                  <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-2">
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
+                      <Info className="w-3 h-3" /> Security Policy
+                    </p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <p className={`text-[10px] ${passCriteria.length ? 'text-green-500' : 'text-muted-foreground'}`}>• 8+ Characters</p>
+                      <p className={`text-[10px] ${passCriteria.upper ? 'text-green-500' : 'text-muted-foreground'}`}>• Uppercase</p>
+                      <p className={`text-[10px] ${passCriteria.lower ? 'text-green-500' : 'text-muted-foreground'}`}>• Lowercase</p>
+                      <p className={`text-[10px] ${passCriteria.number ? 'text-green-500' : 'text-muted-foreground'}`}>• Numbers</p>
+                      <p className={`text-[10px] ${passCriteria.special ? 'text-green-500' : 'text-muted-foreground'}`}>• Symbols (!@#$)</p>
+                    </div>
                   </div>
 
                   <Button 
                     onClick={handleRegister}
-                    disabled={isLoading || usernameStatus !== 'available' || password.length < 8}
-                    className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold"
+                    disabled={isLoading || usernameStatus !== 'available' || !isPassValid}
+                    className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl"
                   >
                     {isLoading ? <Loader2 className="animate-spin" /> : 'Generate OTP'}
                   </Button>
@@ -202,7 +233,7 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <Button onClick={handleGoogleSignup} variant="outline" className="border-white/10 hover:bg-white/5 gap-2 h-12">
+                    <Button onClick={handleGoogleSignup} variant="outline" className="border-white/10 hover:bg-white/5 gap-2 h-12 rounded-xl">
                       <svg className="w-4 h-4" viewBox="0 0 24 24">
                         <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                         <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -211,7 +242,7 @@ export default function RegisterPage() {
                       </svg>
                       Google
                     </Button>
-                    <Button onClick={handleWalletSignup} variant="outline" className="border-white/10 hover:bg-white/5 gap-2 h-12">
+                    <Button onClick={handleWalletSignup} variant="outline" className="border-white/10 hover:bg-white/5 gap-2 h-12 rounded-xl">
                       <Wallet className="w-4 h-4 text-secondary" /> Wallet
                     </Button>
                   </div>
@@ -227,12 +258,12 @@ export default function RegisterPage() {
                     placeholder="000000" 
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="bg-white/5 border-white/10 h-16 text-center text-3xl font-mono tracking-[0.5em]" 
+                    className="bg-white/5 border-white/10 h-16 text-center text-3xl font-mono tracking-[0.5em] focus-visible:ring-primary rounded-2xl" 
                   />
                   <Button 
                     onClick={handleVerifyOtp}
                     disabled={isLoading || otp.length !== 6}
-                    className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold text-lg"
+                    className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold text-lg rounded-2xl glow-primary"
                   >
                     {isLoading ? <Loader2 className="animate-spin" /> : 'Complete Initialization'}
                   </Button>

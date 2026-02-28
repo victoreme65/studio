@@ -32,6 +32,7 @@ import {
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc, collection, query, limit, orderBy } from 'firebase/firestore';
 import React, { useState, useEffect } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 const CHART_DATA = [
   { name: '00:00', value: 42000 },
@@ -93,6 +94,10 @@ export default function Dashboard() {
     updateDocumentNonBlocking(userRef, {
       vipStatus: true,
     });
+    toast({
+      title: "Tier Upgraded",
+      description: "You have been promoted to VIP Elite status.",
+    });
   };
 
   if (isUserLoading || isUserDataLoading) {
@@ -134,7 +139,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00', sub: `+${userData?.miningRate || 0}/H`, icon: Coins, color: 'text-secondary' },
+            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00', sub: `+${userData?.miningRate || 0.4}/H`, icon: Coins, color: 'text-secondary' },
             { label: 'Mining State', value: 'NOMINAL', sub: 'Syncing Nodes', icon: Pickaxe, color: 'text-primary' },
             { label: 'Asset Vault', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Staked Funds', icon: ShieldCheck, color: 'text-green-500' },
             { label: 'Referral Code', value: userData?.referralCode || 'N/A', sub: 'Share & Earn', icon: UserPlus, color: 'text-purple-500' },

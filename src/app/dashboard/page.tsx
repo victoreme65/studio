@@ -12,11 +12,11 @@ import {
   ShieldCheck,
   UserPlus,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MOCK_SIGNALS, MOCK_PREDICTIONS } from '@/app/lib/mock-data';
 import Link from 'next/link';
 import { 
   AreaChart, 
@@ -27,6 +27,8 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { doc, collection, query, limit, orderBy } from 'firebase/firestore';
 
 const CHART_DATA = [
   { name: 'Mon', value: 4000 },
@@ -39,32 +41,72 @@ const CHART_DATA = [
 ];
 
 export default function Dashboard() {
+  const { user, isUserLoading } = useUser();
+  const db = useFirestore();
+
+  const userRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user]);
+
+  const { data: userData, isLoading: isUserDataLoading } = useDoc(userRef);
+
+  const signalsQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'signals_public'), orderBy('timestamp', 'desc'), limit(3));
+  }, [db]);
+
+  const { data: signals, isLoading: isSignalsLoading } = useCollection(signalsQuery);
+
+  const handleUpgradeTier = () => {
+    if (!userRef || !userData) return;
+    updateDocumentNonBlocking(userRef, {
+      vipStatus: true,
+      balance: (userData.balance || 0) - 5000 // Assume 5k SOLAR for VIP
+    });
+  };
+
+  if (isUserLoading || isUserDataLoading) {
+    return (
+      <Shell>
+        <div className="flex items-center justify-center h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Shell>
+    );
+  }
+
   return (
     <Shell>
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="space-y-1">
-            <h1 className="text-4xl font-headline font-bold tracking-tight text-white">Command Center</h1>
+            <h1 className="text-4xl font-headline font-bold tracking-tight">Command Center</h1>
             <p className="text-muted-foreground">Quantum analytics and mining optimization live.</p>
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="border-secondary/50 text-secondary bg-secondary/10 px-4 py-1.5 rounded-full font-bold">
-              VIP LEVEL 1
+              {userData?.vipStatus ? 'VIP LEVEL 1' : 'STANDARD TIER'}
             </Badge>
-            <Button className="bg-primary hover:bg-primary/90 text-white gap-2 rounded-full px-6 glow-primary">
-              <Zap className="w-4 h-4" />
-              Upgrade Tier
-            </Button>
+            {!userData?.vipStatus && (
+              <Button 
+                onClick={handleUpgradeTier}
+                className="bg-primary hover:bg-primary/90 text-white gap-2 rounded-full px-6 glow-primary"
+              >
+                <Zap className="w-4 h-4" />
+                Upgrade Tier
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'SOLAR Balance', value: '45,230.45', sub: '≈ $12,450.00', icon: Coins, color: 'text-secondary', glow: 'shadow-secondary/5' },
-            { label: 'Hash Rate', value: '12.4 GH/s', sub: 'Stable Connection', icon: Pickaxe, color: 'text-primary', glow: 'shadow-primary/5' },
-            { label: 'Active Stakes', value: '12,000', sub: 'Rewards: +450.12', icon: ShieldCheck, color: 'text-green-500', glow: 'shadow-green-500/5' },
+            { label: 'SOLAR Balance', value: userData?.balance?.toLocaleString() || '0.00', sub: '≈ $0.00', icon: Coins, color: 'text-secondary', glow: 'shadow-secondary/5' },
+            { label: 'Mining Rate', value: `${userData?.miningRate || 0} SOLAR/H`, sub: 'Stable Connection', icon: Pickaxe, color: 'text-primary', glow: 'shadow-primary/5' },
+            { label: 'Active Stakes', value: userData?.stakingBalance?.toLocaleString() || '0', sub: 'Rewards: +0.00', icon: ShieldCheck, color: 'text-green-500', glow: 'shadow-green-500/5' },
             { label: 'Referrals', value: '12 Users', sub: 'Total Earned: 1.2k', icon: UserPlus, color: 'text-purple-500', glow: 'shadow-purple-500/5' },
           ].map((stat, i) => (
             <Card key={i} className={`glass-card group ${stat.glow}`}>
@@ -77,7 +119,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground font-medium mb-1">{stat.label}</p>
-                  <h3 className="text-3xl font-bold font-headline truncate text-white">{stat.value}</h3>
+                  <h3 className="text-3xl font-bold font-headline truncate">{stat.value}</h3>
                   <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                     <ArrowUpRight className="w-3 h-3 text-green-500" />
                     {stat.sub}
@@ -93,7 +135,7 @@ export default function Dashboard() {
           <Card className="lg:col-span-2 glass-card overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between border-b border-white/5">
               <div className="space-y-1">
-                <CardTitle className="text-lg font-headline font-bold text-white">Value Trajectory</CardTitle>
+                <CardTitle className="text-lg font-headline font-bold">Value Trajectory</CardTitle>
                 <p className="text-xs text-muted-foreground">Historical performance vs AI projection</p>
               </div>
               <div className="flex gap-2">
@@ -123,8 +165,8 @@ export default function Dashboard() {
                       hide 
                     />
                     <Tooltip 
-                      contentStyle={{backgroundColor: '#111', border: '1px solid #333', borderRadius: '8px'}}
-                      itemStyle={{color: '#fff'}}
+                      contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px'}}
+                      itemStyle={{color: 'hsl(var(--foreground))'}}
                     />
                     <Area 
                       type="monotone" 
@@ -143,28 +185,33 @@ export default function Dashboard() {
           {/* Quick Signals */}
           <Card className="glass-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-headline font-bold text-white">Live Signals</CardTitle>
+              <CardTitle className="text-lg font-headline font-bold">Live Signals</CardTitle>
               <Badge className="bg-primary/20 text-primary border-none text-[10px] animate-pulse">LIVE</Badge>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-white/5">
-                {MOCK_SIGNALS.map((signal, i) => (
+                {signals?.map((signal, i) => (
                   <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors group cursor-pointer">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-lg ${signal.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
                         {signal.type === 'BUY' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white">{signal.pair}</p>
+                        <p className="text-sm font-bold">{signal.pair}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{signal.confidence}% Accuracy</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className={`text-sm font-bold ${signal.type === 'BUY' ? 'text-green-500' : 'text-destructive'}`}>{signal.type}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground">@{signal.entry.toFixed(2)}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground">@{signal.entry?.toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
+                {!signals?.length && !isSignalsLoading && (
+                  <div className="p-8 text-center text-muted-foreground text-sm">
+                    No active signals.
+                  </div>
+                )}
               </div>
               <div className="p-4 bg-white/5">
                 <Button variant="ghost" className="w-full text-xs text-primary gap-2" asChild>

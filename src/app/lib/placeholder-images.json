@@ -1,0 +1,28 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-bg",
+      "description": "Futuristic digital landscape with crypto tokens",
+      "imageUrl": "https://picsum.photos/seed/solar-hero/1200/800",
+      "imageHint": "futuristic crypto"
+    },
+    {
+      "id": "ai-brain",
+      "description": "Abstract AI neural network",
+      "imageUrl": "https://picsum.photos/seed/ai-brain/600/400",
+      "imageHint": "neural network"
+    },
+    {
+      "id": "mining-rig",
+      "description": "Digital cloud mining representation",
+      "imageUrl": "https://picsum.photos/seed/mining-rig/600/400",
+      "imageHint": "digital mining"
+    },
+    {
+      "id": "market-chart",
+      "description": "Cyberpunk market analysis chart",
+      "imageUrl": "https://picsum.photos/seed/market-analysis/600/400",
+      "imageHint": "trading chart"
+    }
+  ]
+}

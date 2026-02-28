@@ -1,204 +1,211 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Shell } from '@/components/layout/Shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pickaxe, Zap, Flame, Clock, Coins, History } from 'lucide-react';
+import { Pickaxe, Zap, Flame, Clock, Coins, History, Terminal, Power, Database } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 export default function MiningPage() {
   const [isMining, setIsMining] = useState(false);
   const [accumulated, setAccumulated] = useState(0);
   const [miningRate] = useState(0.4 / 3600); // Solar per second
+  const [logs, setLogs] = useState<string[]>(["[SYSTEM] Engine initialized...", "[SYSTEM] Waiting for user command..."]);
+  const terminalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isMining) {
       interval = setInterval(() => {
         setAccumulated(prev => prev + miningRate);
+        if (Math.random() > 0.95) {
+          addLog(`[NODE-04] Block verified. Hash: 0x${Math.random().toString(16).slice(2, 10)}...`);
+        }
       }, 1000);
     }
     return () => clearInterval(interval);
   }, [isMining, miningRate]);
 
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [logs]);
+
+  const addLog = (msg: string) => {
+    setLogs(prev => [...prev.slice(-15), `[${new Date().toLocaleTimeString()}] ${msg}`]);
+  };
+
   const handleToggleMining = () => {
     setIsMining(!isMining);
     if (!isMining) {
+      addLog("Starting quantum hash extraction...");
       toast({
-        title: "Mining Started",
-        description: "Your session has been initialized. SOLAR tokens are being generated.",
+        title: "Engine Hot",
+        description: "Decentralized mining sequence initiated.",
       });
+    } else {
+      addLog("Engine power down sequence initiated.");
     }
   };
 
   const handleClaim = () => {
     if (accumulated < 0.01) {
       toast({
-        title: "Balance too low",
-        description: "Minimum claim amount is 0.01 SOLAR",
+        title: "Minimum Not Met",
+        description: "Accumulate at least 0.01 SOLAR to bridge tokens.",
         variant: "destructive"
       });
       return;
     }
+    addLog(`Claimed ${accumulated.toFixed(4)} SOLAR to mainnet wallet.`);
     toast({
-      title: "Tokens Claimed",
-      description: `Successfully added ${accumulated.toFixed(4)} SOLAR to your wallet.`,
+      title: "Sync Successful",
+      description: `Bridged ${accumulated.toFixed(4)} SOLAR to your account.`,
     });
     setAccumulated(0);
   };
 
   return (
     <Shell>
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-headline font-bold">Cloud Mining Engine</h1>
-          <p className="text-muted-foreground">High-performance decentralized mining powered by Solar AI.</p>
+      <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-4">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-headline font-bold text-white">Mining Rig</h1>
+            <p className="text-muted-foreground">Quantum hash extraction from the Solar neural network.</p>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="outline" className="border-primary/20 bg-primary/5 px-3 py-1">Node: Active</Badge>
+            <Badge variant="outline" className="border-secondary/20 bg-secondary/5 px-3 py-1 text-secondary">Latency: 14ms</Badge>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Mining Terminal */}
-          <Card className="md:col-span-2 glass-card relative overflow-hidden group">
+          <Card className="lg:col-span-3 glass-card relative overflow-hidden group border-white/5">
             {isMining && (
               <div className="absolute inset-0 bg-primary/5 pointer-events-none animate-pulse" />
             )}
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Pickaxe className={isMining ? "text-primary animate-bounce" : "text-muted-foreground"} />
-                Active Session
+            <CardHeader className="flex flex-row items-center justify-between border-b border-white/5">
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Power className={isMining ? "text-primary animate-pulse" : "text-muted-foreground"} />
+                Reactor Core
               </CardTitle>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Efficiency</p>
+                  <p className="text-sm font-bold text-green-500">98.4%</p>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-8 py-10">
+            <CardContent className="space-y-8 py-12">
               <div className="flex flex-col items-center">
-                <div className="relative mb-8">
-                  <div className={`w-48 h-48 rounded-full border-2 border-white/5 flex items-center justify-center transition-all duration-500 ${isMining ? 'border-primary shadow-[0_0_50px_-12px_rgba(0,102,255,0.5)]' : ''}`}>
+                <div className="relative mb-12">
+                  <div className={`w-64 h-64 rounded-full border border-white/5 flex items-center justify-center transition-all duration-700 ${isMining ? 'border-primary glow-primary' : ''}`}>
                     <div className="text-center">
-                      <h2 className="text-5xl font-bold font-headline mb-1 tabular-nums">
+                      <h2 className="text-6xl font-bold font-headline mb-1 tabular-nums text-white">
                         {accumulated.toFixed(5)}
                       </h2>
-                      <p className="text-sm font-medium text-secondary tracking-widest uppercase">SOLAR</p>
+                      <p className="text-sm font-bold text-secondary tracking-[0.3em] uppercase">Pending SOLAR</p>
                     </div>
                   </div>
                   {isMining && (
-                    <div className="absolute -top-4 -right-4">
-                      <Zap className="text-secondary fill-current w-12 h-12 animate-pulse" />
+                    <div className="absolute top-0 left-0 w-full h-full animate-spin-slow">
+                      <Zap className="text-secondary fill-current w-8 h-8 absolute -top-4 left-1/2 -translate-x-1/2" />
                     </div>
                   )}
                 </div>
 
-                <div className="w-full max-w-sm space-y-2">
-                  <div className="flex justify-between text-xs font-medium text-muted-foreground uppercase tracking-widest">
-                    <span>Mining Rate</span>
-                    <span className="text-primary">0.4 SOLAR / HR</span>
+                <div className="w-full max-w-lg space-y-4">
+                  <div className="flex justify-between items-end">
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Mining Frequency</p>
+                      <p className="text-lg font-bold text-primary">0.4000 SOLAR / HR</p>
+                    </div>
+                    <div className="text-right space-y-1">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Power Draw</p>
+                      <p className="text-lg font-bold text-white">0.00 kWh <span className="text-[10px] text-muted-foreground">(Cloud)</span></p>
+                    </div>
                   </div>
                   <Progress value={isMining ? 100 : 0} className="h-2 bg-white/5" />
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto">
                 <Button 
                   onClick={handleToggleMining}
-                  size="lg" 
-                  className={`flex-1 h-16 text-lg font-bold rounded-2xl transition-all duration-300 ${isMining ? 'bg-destructive/10 text-destructive border border-destructive hover:bg-destructive hover:text-white' : 'bg-primary text-white hover:bg-primary/90'}`}
+                  className={`flex-1 h-20 text-xl font-bold rounded-2xl transition-all duration-500 ${isMining ? 'bg-destructive/10 text-destructive border border-destructive hover:bg-destructive hover:text-white' : 'bg-primary text-white hover:bg-primary/90 glow-primary'}`}
                 >
-                  {isMining ? 'Stop Mining' : 'Start Mining'}
+                  {isMining ? 'Terminate Rig' : 'Ignite Engine'}
                 </Button>
                 <Button 
                   onClick={handleClaim}
                   disabled={accumulated === 0}
-                  variant="outline" 
-                  size="lg" 
-                  className="flex-1 h-16 text-lg font-bold rounded-2xl border-white/10 hover:bg-white/5"
+                  className="flex-1 h-20 text-xl font-bold rounded-2xl border-white/10 glass-card text-white hover:bg-white/10"
                 >
-                  Claim Tokens
+                  Bridge Tokens
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Mining Info */}
+          {/* Diagnostics Terminal & Stats */}
           <div className="space-y-6">
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground">Boosters</CardTitle>
+            <Card className="glass-card bg-black/40 border-white/5 flex flex-col h-[400px]">
+              <CardHeader className="py-3 border-b border-white/5">
+                <CardTitle className="text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                  <Terminal className="w-3 h-3" />
+                  Live Diagnostics
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { name: 'VIP Multiplier', value: '1.2x', active: true },
-                  { name: 'Referral Bonus', value: '1.05x', active: false },
-                  { name: 'Daily Streak', value: '1.0x', active: false },
-                ].map((boost, i) => (
-                  <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-white/5 border border-white/5">
-                    <span className="text-sm font-medium">{boost.name}</span>
-                    <Badge variant={boost.active ? 'default' : 'secondary'} className={boost.active ? 'bg-primary' : 'bg-white/5'}>
-                      {boost.value}
-                    </Badge>
-                  </div>
+              <CardContent 
+                ref={terminalRef}
+                className="flex-1 p-4 font-mono text-[10px] text-primary/70 overflow-y-auto scrollbar-hide space-y-1"
+              >
+                {logs.map((log, i) => (
+                  <div key={i} className="leading-tight">{log}</div>
                 ))}
               </CardContent>
             </Card>
 
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="text-sm uppercase tracking-widest text-muted-foreground">Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-white/5 text-primary">
-                    <Flame className="w-4 h-4" />
+            <Card className="glass-card border-white/5">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                    <Database className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Hash Power</p>
-                    <p className="text-sm font-bold">12.4 GH/s</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Network Capacity</p>
+                    <p className="text-lg font-bold text-white">4.2 PB</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-white/5 text-secondary">
-                    <Clock className="w-4 h-4" />
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-secondary/10 text-secondary">
+                    <Flame className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Active Time</p>
-                    <p className="text-sm font-bold">12h 45m</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Node Temp</p>
+                    <p className="text-lg font-bold text-white">42°C <span className="text-[10px] text-muted-foreground">NOMINAL</span></p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-
-        {/* Claim History */}
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <History className="text-muted-foreground" />
-              Claim History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { amount: '12.450', date: '2024-05-20 14:30', status: 'Completed' },
-                { amount: '8.210', date: '2024-05-19 12:15', status: 'Completed' },
-                { amount: '15.600', date: '2024-05-18 09:45', status: 'Completed' },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-full bg-primary/10 text-primary">
-                      <Coins className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold">+{item.amount} SOLAR</p>
-                      <p className="text-xs text-muted-foreground">{item.date}</p>
-                    </div>
-                  </div>
-                  <Badge className="bg-green-500/20 text-green-500 border-none">{item.status}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      <style jsx global>{`
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 10s linear infinite;
+        }
+      `}</style>
     </Shell>
   );
 }
